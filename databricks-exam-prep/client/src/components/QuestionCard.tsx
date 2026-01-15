@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle, XCircle, Lightbulb } from 'lucide-react';
+import { AlertCircle, CheckCircle, XCircle, Lightbulb, ExternalLink } from 'lucide-react';
 import type { Question, UserAnswer } from '@/hooks/useQuizState';
 
 interface QuestionCardProps {
@@ -147,6 +147,27 @@ export default function QuestionCard({
               </div>
             </div>
           </div>
+
+          {/* Official Reference */}
+          {question.officialReference && (
+            <div className="bg-primary/5 border border-primary/30 rounded-lg p-6">
+              <div className="flex items-start gap-3">
+                <ExternalLink className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-2">Referência Oficial</h3>
+                  <a
+                    href={question.officialReference.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline text-sm font-medium flex items-center gap-1 w-fit"
+                  >
+                    {question.officialReference.title}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Result Message */}
           {userAnswer.isCorrect !== null && (
