@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+type Theme = "light" | "dark" | "system";
 
 interface ThemeContextType {
   theme: Theme;
-  toggleTheme?: () => void;
+  effectiveTheme: "light" | "dark";
+  setTheme?: (theme: Theme) => void;
   switchable: boolean;
 }
 
@@ -21,7 +22,7 @@ export function ThemeProvider({
   defaultTheme = "light",
   switchable = false,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setThemeState] = useState<Theme>(() => {
     if (switchable) {
       const stored = localStorage.getItem("theme");
       return (stored as Theme) || defaultTheme;
@@ -29,9 +30,27 @@ export function ThemeProvider({
     return defaultTheme;
   });
 
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">("light");
+
+  // Detectar preferência do sistema
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setSystemTheme(mediaQuery.matches ? "dark" : "light");
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // Determinar tema efetivo
+  const effectiveTheme: "light" | "dark" = theme === "system" ? systemTheme : theme;
+
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
+    if (effectiveTheme === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
@@ -40,16 +59,16 @@ export function ThemeProvider({
     if (switchable) {
       localStorage.setItem("theme", theme);
     }
-  }, [theme, switchable]);
+  }, [effectiveTheme, theme, switchable]);
 
-  const toggleTheme = switchable
-    ? () => {
-        setTheme(prev => (prev === "light" ? "dark" : "light"));
+  const setTheme = switchable
+    ? (newTheme: Theme) => {
+        setThemeState(newTheme);
       }
     : undefined;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ theme, effectiveTheme, setTheme, switchable }}>
       {children}
     </ThemeContext.Provider>
   );
