@@ -5,9 +5,11 @@ import QuestionCard from '@/components/QuestionCard';
 import Sidebar from '@/components/Sidebar';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Menu } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 export default function Home() {
+  const [, setLocation] = useLocation();
   const {
     questions,
     currentQuestion,
@@ -70,6 +72,15 @@ export default function Home() {
                 </p>
                 <p className="text-sm text-muted-foreground">Taxa de Acerto: {Math.round((stats.correct / stats.totalQuestions) * 100)}%</p>
               </div>
+              <Button
+                onClick={() => setLocation("/mode-selection")}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Menu className="w-4 h-4" />
+                Modalidades
+              </Button>
               <ThemeSwitcher />
             </div>
           </div>

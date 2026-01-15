@@ -14,6 +14,10 @@ export interface Question {
   correctAnswer: 'A' | 'B' | 'C' | 'D';
   rationale: string;
   tip: string;
+  officialReference?: {
+    title: string;
+    url: string;
+  };
 }
 
 export interface QuizStats {

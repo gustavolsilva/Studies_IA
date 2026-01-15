@@ -101,7 +101,7 @@ export default function StartScreen({ onStart, totalQuestions }: StartScreenProp
             size="lg"
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold transition-all duration-200"
           >
-            Começar Simulado
+            Começar Simulado (Modo Livre)
           </Button>
           <p className="text-sm text-muted-foreground mt-4">Você pode pausar e retomar a qualquer momento</p>
         </div>
