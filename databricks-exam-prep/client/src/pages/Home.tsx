@@ -73,6 +73,14 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">Taxa de Acerto: {Math.round((stats.correct / stats.totalQuestions) * 100)}%</p>
               </div>
               <Button
+                onClick={() => setLocation("/history")}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                📊 Histórico
+              </Button>
+              <Button
                 onClick={() => setLocation("/mode-selection")}
                 variant="outline"
                 size="sm"

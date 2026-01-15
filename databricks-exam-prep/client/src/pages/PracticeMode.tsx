@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Clock, Settings } from "lucide-react";
+import { useQuizHistory } from "@/hooks/useQuizHistory";
 
 interface Question {
   id: number;
@@ -26,6 +27,7 @@ type Stage = "config" | "practice" | "results";
 
 export default function PracticeMode() {
   const [, setLocation] = useLocation();
+  const { saveAttempt } = useQuizHistory();
   const [stage, setStage] = useState<Stage>("config");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -114,6 +116,53 @@ export default function PracticeMode() {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
+      // Salvar tentativa no histórico
+      const categoryStats: Record<string, { correct: number; total: number }> = {};
+      const difficultyStats: Record<string, { correct: number; total: number }> = {};
+      
+      questions.forEach((q) => {
+        const answer = answers.find((a) => a.questionId === q.id);
+        if (!categoryStats[q.category]) {
+          categoryStats[q.category] = { correct: 0, total: 0 };
+        }
+        if (!difficultyStats[q.difficulty]) {
+          difficultyStats[q.difficulty] = { correct: 0, total: 0 };
+        }
+        categoryStats[q.category].total += 1;
+        difficultyStats[q.difficulty].total += 1;
+        if (answer?.isCorrect) {
+          categoryStats[q.category].correct += 1;
+          difficultyStats[q.difficulty].correct += 1;
+        }
+      });
+
+      const startTime = Date.now() - (timeLimit > 0 ? (timeLimit * 60 - timeLeft) * 1000 : 0);
+      const timeSpent = timeLimit > 0 ? (timeLimit * 60 - timeLeft) : 0;
+
+      saveAttempt({
+        mode: 'practice',
+        startTime,
+        endTime: Date.now(),
+        totalQuestions: questions.length,
+        correctAnswers: answers.filter((a) => a.isCorrect).length,
+        incorrectAnswers: answers.filter((a) => !a.isCorrect).length,
+        skippedQuestions: 0,
+        timeSpent,
+        categoryStats,
+        difficultyStats,
+        answers: answers.map((a) => {
+          const q = questions.find((q) => q.id === a.questionId)!;
+          return {
+            questionId: a.questionId.toString(),
+            selected: a.selectedAnswer,
+            correct: q.correctAnswer,
+            isCorrect: a.isCorrect,
+            category: q.category,
+            difficulty: q.difficulty,
+          };
+        }),
+      });
+      
       setStage("results");
     }
   };
