@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "category": "Delta Lake",
+    "difficulty": "intermediate",
+    "question": "Qual é a principal vantagem do Delta Lake em relação aos formatos de armazenamento tradicionais como Parquet?",
+    "options": {
+      "A": "Suporte nativo a transações ACID e Time Travel",
+      "B": "Melhor compressão de dados em comparação com Parquet",
+      "C": "Eliminação automática de arquivos duplicados",
+      "D": "Compatibilidade com bancos de dados relacionais SQL"
+    },
+    "correctAnswer": "A",
+    "rationale": "Delta Lake fornece transações ACID (Atomicidade, Consistência, Isolamento, Durabilidade) e Time Travel, permitindo consultar dados em versões anteriores. Parquet é apenas um formato de arquivo sem essas garantias. A compressão é similar entre formatos, e Parquet já é compatível com SQL. A eliminação automática de duplicados não é uma vantagem específica do Delta Lake.",
+    "tip": "Lembre-se que Delta Lake é construído sobre Parquet, adicionando uma camada de transações e versionamento."
+  },
+  {
+    "id": 2,
+    "category": "Delta Lake",
+    "difficulty": "advanced",
+    "question": "Você está otimizando uma tabela Delta com 500GB de dados. Qual sequência de comandos é a mais eficiente para melhorar performance de queries?",
+    "options": {
+      "A": "VACUUM primeiro, depois OPTIMIZE, depois Z-ORDER",
+      "B": "Z-ORDER primeiro, depois OPTIMIZE, depois VACUUM",
+      "C": "OPTIMIZE com Z-ORDER, depois VACUUM",
+      "D": "VACUUM, depois Z-ORDER, depois OPTIMIZE"
+    },
+    "correctAnswer": "C",
+    "rationale": "A sequência correta é: 1) OPTIMIZE com Z-ORDER (reorganiza dados e cria índices multidimensionais em uma operação), 2) VACUUM (remove arquivos obsoletos). Executar VACUUM antes de OPTIMIZE é ineficiente pois OPTIMIZE pode gerar novos arquivos. Z-ORDER sem OPTIMIZE não é efetivo. VACUUM no final garante limpeza de arquivos antigos.",
+    "tip": "OPTIMIZE e Z-ORDER trabalham juntos para reorganizar dados; VACUUM deve ser executado depois para limpeza."
+  },
+  {
+    "id": 3,
+    "category": "Delta Lake",
+    "difficulty": "intermediate",
+    "question": "O comando RESTORE em Delta Lake é usado para:",
+    "options": {
+      "A": "Recuperar dados deletados e restaurar a tabela para uma versão anterior",
+      "B": "Fazer backup automático de todas as versões da tabela",
+      "C": "Remover permanentemente dados de versões antigas",
+      "D": "Sincronizar dados entre múltiplos clusters"
+    },
+    "correctAnswer": "A",
+    "rationale": "RESTORE recupera uma tabela Delta para um estado anterior usando o Transaction Log. Permite reverter operações DELETE, UPDATE ou DROP. RESTORE não faz backup (é função do VACUUM), não remove dados permanentemente, e não sincroniza entre clusters.",
+    "tip": "RESTORE é o comando para desfazer mudanças; use com versão ou timestamp."
+  },
+  {
+    "id": 4,
+    "category": "Delta Lake",
+    "difficulty": "advanced",
+    "question": "Ao usar DESCRIBE DETAIL em uma tabela Delta, qual informação NÃO está disponível?",
+    "options": {
+      "A": "Número de arquivos e tamanho total",
+      "B": "Estatísticas de execução de queries (query performance)",
+      "C": "Versão atual e timestamp da última modificação",
+      "D": "Partições e localização física dos dados"
+    },
+    "correctAnswer": "B",
+    "rationale": "DESCRIBE DETAIL fornece metadados da tabela (arquivos, tamanho, versão, partições, localização), mas NÃO inclui estatísticas de performance de queries. Para isso, use DESCRIBE FORMATTED ou consulte logs de execução.",
+    "tip": "DESCRIBE DETAIL é para metadados estruturais, não para performance de queries."
+  },
+  {
+    "id": 5,
+    "category": "Arquitetura Medallion",
+    "difficulty": "intermediate",
+    "question": "Na Arquitetura Medallion, qual é a responsabilidade principal da camada Silver?",
+    "options": {
+      "A": "Armazenar dados brutos e não processados diretamente da fonte",
+      "B": "Dados limpos, validados e enriquecidos, prontos para análise",
+      "C": "Dados agregados e transformados para relatórios executivos",
+      "D": "Dados de backup para recuperação de desastres"
+    },
+    "correctAnswer": "B",
+    "rationale": "A camada Silver contém dados limpos, validados, deduplicated e enriquecidos. Bronze armazena dados brutos, Gold contém dados agregados para relatórios. A camada Silver é intermediária entre Bronze (cru) e Gold (refinado).",
+    "tip": "Silver = dados prontos para análise, mas não agregados. Gold = dados agregados para negócio."
+  },
+  {
+    "id": 6,
+    "category": "Arquitetura Medallion",
+    "difficulty": "advanced",
+    "question": "Em um pipeline Medallion, você precisa garantir que dados duplicados da camada Bronze não apareçam na Silver. Qual abordagem é mais eficiente?",
+    "options": {
+      "A": "Usar DISTINCT em cada query da Silver",
+      "B": "Implementar deduplicação na Bronze usando MERGE com chave primária",
+      "C": "Usar Delta Live Tables com expectativas de unicidade",
+      "D": "Executar VACUUM regularmente na Silver"
+    },
+    "correctAnswer": "B",
+    "rationale": "Deduplicação deve ser feita na Bronze usando MERGE com chave primária, evitando dados duplicados desde a origem. Usar DISTINCT em queries é ineficiente. Delta Live Tables com expectativas pode validar, mas não resolve o problema na origem. VACUUM não remove duplicatas.",
+    "tip": "Limpe dados na Bronze; não deixe para as camadas posteriores."
+  },
+  {
+    "id": 7,
+    "category": "Arquitetura Medallion",
+    "difficulty": "intermediate",
+    "question": "Qual é a diferença principal entre a camada Gold e um Data Warehouse tradicional?",
+    "options": {
+      "A": "Gold é otimizado para OLTP, Data Warehouse para OLAP",
+      "B": "Gold usa Delta Lake, Data Warehouse usa Parquet",
+      "C": "Gold é construído sobre dados já processados (Silver), Data Warehouse integra múltiplas fontes",
+      "D": "Gold não suporta transações, Data Warehouse suporta"
+    },
+    "correctAnswer": "C",
+    "rationale": "Gold é a camada de dados refinados construída sobre Silver (dados já limpos). Um Data Warehouse tradicional integra múltiplas fontes e sistemas. Ambos podem usar Delta Lake, ambos suportam OLAP, ambos suportam transações.",
+    "tip": "Gold é especializado em dados já processados; Data Warehouse é mais genérico e integrador."
+  },
+  {
+    "id": 8,
+    "category": "Unity Catalog",
+    "difficulty": "intermediate",
+    "question": "Qual comando você usa para conceder permissão de leitura a um usuário em uma tabela gerenciada pelo Unity Catalog?",
+    "options": {
+      "A": "GRANT SELECT ON TABLE schema.table TO user@company.com",
+      "B": "GRANT READ ON TABLE schema.table TO user@company.com",
+      "C": "GRANT USAGE ON SCHEMA schema TO user@company.com",
+      "D": "GRANT SELECT ON schema.table TO user@company.com"
+    },
+    "correctAnswer": "A",
+    "rationale": "O comando correto é GRANT SELECT (não READ) ON TABLE com nome completo. READ não é um privilégio válido em Databricks. GRANT USAGE permite acessar schema, mas não a tabela. O nome da tabela deve incluir schema.",
+    "tip": "Use GRANT SELECT para leitura, GRANT MODIFY para escrita em Unity Catalog."
+  },
+  {
+    "id": 9,
+    "category": "Unity Catalog",
+    "difficulty": "advanced",
+    "question": "Você configurou uma External Location em Unity Catalog apontando para um bucket S3. Um usuário recebe erro 'Access Denied' ao tentar ler dados. Qual é a causa mais provável?",
+    "options": {
+      "A": "O usuário não tem permissão USAGE na External Location",
+      "B": "A credencial de acesso S3 expirou",
+      "C": "O bucket S3 foi deletado",
+      "D": "A tabela não está registrada no Unity Catalog"
+    },
+    "correctAnswer": "A",
+    "rationale": "External Locations requerem permissão USAGE para acesso. Sem GRANT USAGE, usuários não conseguem ler dados. Credenciais expiradas causariam erro diferente. Bucket deletado causaria erro de conexão. Tabela não registrada causaria erro de 'table not found'.",
+    "tip": "Sempre GRANT USAGE em External Location antes de permitir acesso a dados."
+  },
+  {
+    "id": 10,
+    "category": "Unity Catalog",
+    "difficulty": "intermediate",
+    "question": "A Linhagem (Lineage) no Unity Catalog permite rastrear:",
+    "options": {
+      "A": "Apenas as transformações SQL executadas",
+      "B": "Origem, transformações e destino dos dados entre tabelas",
+      "C": "Apenas o histórico de versões de tabelas",
+      "D": "Apenas permissões de acesso a dados"
+    },
+    "correctAnswer": "B",
+    "rationale": "Linhagem rastreia o fluxo completo de dados: de qual tabela vieram (origem), como foram transformados e para onde foram (destino). Não é limitado a SQL, inclui transformações Spark. Não é apenas histórico de versões ou permissões.",
+    "tip": "Lineage = rastreamento de fluxo de dados de ponta a ponta."
+  },
+  {
+    "id": 11,
+    "category": "Processamento de Dados",
+    "difficulty": "intermediate",
+    "question": "Qual é a diferença entre INNER JOIN e LEFT JOIN em Spark SQL?",
+    "options": {
+      "A": "INNER JOIN retorna apenas linhas com correspondência; LEFT JOIN retorna todas as linhas da tabela esquerda",
+      "B": "INNER JOIN é mais rápido que LEFT JOIN",
+      "C": "LEFT JOIN retorna apenas linhas sem correspondência",
+      "D": "INNER JOIN suporta múltiplas colunas de join; LEFT JOIN suporta apenas uma"
+    },
+    "correctAnswer": "A",
+    "rationale": "INNER JOIN retorna apenas linhas com correspondência em ambas as tabelas. LEFT JOIN retorna todas as linhas da tabela esquerda, preenchendo com NULL as colunas da direita sem correspondência. Performance depende de dados, não do tipo de join. Ambos suportam múltiplas colunas.",
+    "tip": "LEFT JOIN = tudo da esquerda + correspondências da direita."
+  },
+  {
+    "id": 12,
+    "category": "Processamento de Dados",
+    "difficulty": "advanced",
+    "question": "Você tem um DataFrame com uma coluna 'tags' contendo arrays de strings. Precisa explodir cada tag em uma linha separada. Qual função usar?",
+    "options": {
+      "A": "FLATTEN",
+      "B": "EXPLODE",
+      "C": "SPLIT",
+      "D": "ARRAY_JOIN"
+    },
+    "correctAnswer": "B",
+    "rationale": "EXPLODE transforma cada elemento de um array em uma linha separada. FLATTEN é para arrays aninhados. SPLIT converte string em array. ARRAY_JOIN converte array em string.",
+    "tip": "EXPLODE = uma linha por elemento do array."
+  },
+  {
+    "id": 13,
+    "category": "Processamento de Dados",
+    "difficulty": "intermediate",
+    "question": "Auto Loader em Databricks é usado para:",
+    "options": {
+      "A": "Ingerir dados automaticamente de fontes externas com Schema Evolution",
+      "B": "Otimizar automaticamente queries SQL",
+      "C": "Fazer backup automático de tabelas Delta",
+      "D": "Escalar automaticamente clusters Spark"
+    },
+    "correctAnswer": "A",
+    "rationale": "Auto Loader (cloudFiles) ingere dados de fontes externas (S3, ADLS, GCS) com detecção automática de schema e suporte a Schema Evolution. Não otimiza queries, não faz backup, e não escala clusters.",
+    "tip": "Auto Loader = ingestão inteligente com Schema Evolution automática."
+  },
+  {
+    "id": 14,
+    "category": "Processamento de Dados",
+    "difficulty": "advanced",
+    "question": "Ao usar Auto Loader com Schema Evolution, qual opção garante que colunas novas sejam adicionadas sem falhas?",
+    "options": {
+      "A": "Usar 'rescuedDataColumn' para capturar dados com schema desconhecido",
+      "B": "Usar 'mergeSchema' = true",
+      "C": "Usar 'failOnNewColumn' = false",
+      "D": "Ambas A e B"
+    },
+    "correctAnswer": "D",
+    "rationale": "'rescuedDataColumn' captura dados com schema desconhecido em uma coluna especial. 'mergeSchema' = true permite adicionar novas colunas automaticamente. Ambas as opções trabalham juntas para garantir Schema Evolution sem falhas.",
+    "tip": "Use ambas as opções para máxima robustez em Schema Evolution."
+  },
+  {
+    "id": 15,
+    "category": "Processamento de Dados",
+    "difficulty": "intermediate",
+    "question": "Delta Live Tables (DLT) oferece qual vantagem em relação a notebooks Spark tradicionais?",
+    "options": {
+      "A": "Melhor performance de queries",
+      "B": "Declaração de dependências automática e Expectations para qualidade de dados",
+      "C": "Suporte a múltiplas linguagens de programação",
+      "D": "Integração nativa com Data Warehouses externos"
+    },
+    "correctAnswer": "B",
+    "rationale": "DLT automatiza gerenciamento de dependências entre tabelas e permite definir Expectations (validações) para qualidade de dados. Performance é similar. DLT suporta SQL e Python (não múltiplas linguagens). Integração com DW é possível mas não é vantagem específica.",
+    "tip": "DLT = dependências automáticas + validações de qualidade (Expectations)."
+  },
+  {
+    "id": 16,
+    "category": "Processamento de Dados",
+    "difficulty": "advanced",
+    "question": "Em uma pipeline DLT, você define uma Expectation que falha para 5% dos registros. Qual é o comportamento padrão?",
+    "options": {
+      "A": "A pipeline falha completamente",
+      "B": "Os registros que falharam são descartados; a pipeline continua",
+      "C": "Os registros são movidos para uma tabela de quarentena",
+      "D": "A pipeline avisa mas continua processando todos os registros"
+    },
+    "correctAnswer": "B",
+    "rationale": "Por padrão, registros que falham em Expectations são descartados e a pipeline continua. Você pode configurar ações diferentes (quarentena, falha total) usando 'on_violation' = 'drop'/'warn'/'fail'.",
+    "tip": "Expectations descartam registros ruins por padrão; configure 'on_violation' para mudar comportamento."
+  },
+  {
+    "id": 17,
+    "category": "Orquestração e DevOps",
+    "difficulty": "intermediate",
+    "question": "Em Databricks Jobs, qual é a função de uma Task Dependency?",
+    "options": {
+      "A": "Garantir que uma tarefa execute apenas após outra completar com sucesso",
+      "B": "Compartilhar variáveis entre tarefas",
+      "C": "Limitar o número de tarefas executadas em paralelo",
+      "D": "Monitorar o uso de recursos de cada tarefa"
+    },
+    "correctAnswer": "A",
+    "rationale": "Task Dependencies definem ordem de execução: uma tarefa só executa após a anterior completar com sucesso. Não compartilham variáveis (use Widgets para isso), não limitam paralelismo, e não monitoram recursos.",
+    "tip": "Task Dependency = ordem de execução garantida."
+  },
+  {
+    "id": 18,
+    "category": "Orquestração e DevOps",
+    "difficulty": "advanced",
+    "question": "Você tem um Job com 3 tarefas: A → B → C. A tarefa B falha. Qual é o comportamento padrão?",
+    "options": {
+      "A": "A tarefa C executa mesmo assim",
+      "B": "A tarefa C não executa; o Job falha",
+      "C": "A tarefa C aguarda manualmente antes de executar",
+      "D": "O Job reinicia automaticamente do início"
+    },
+    "correctAnswer": "B",
+    "rationale": "Por padrão, se uma tarefa falha, as tarefas dependentes não executam e o Job falha. Você pode configurar 'on_failure' para continuar mesmo com falhas.",
+    "tip": "Task Dependencies interrompem pipeline se a tarefa anterior falha."
+  },
+  {
+    "id": 19,
+    "category": "Orquestração e DevOps",
+    "difficulty": "intermediate",
+    "question": "Git Folders (Repos) em Databricks permite:",
+    "options": {
+      "A": "Versionamento de notebooks e código diretamente no Databricks",
+      "B": "Backup automático de dados em tabelas Delta",
+      "C": "Sincronização de permissões entre Git e Databricks",
+      "D": "Integração com ferramentas de CI/CD externas"
+    },
+    "correctAnswer": "A",
+    "rationale": "Git Folders sincronizam repositórios Git com Databricks, permitindo versionamento de notebooks e código. Não fazem backup de dados, não sincronizam permissões, mas permitem integração com CI/CD.",
+    "tip": "Git Folders = versionamento de código dentro do Databricks."
+  },
+  {
+    "id": 20,
+    "category": "Orquestração e DevOps",
+    "difficulty": "advanced",
+    "question": "Databricks Asset Bundles (DABs) são usados para:",
+    "options": {
+      "A": "Empacotar e deployar pipelines, Jobs e recursos como código (Infrastructure as Code)",
+      "B": "Comprimir dados para reduzir espaço de armazenamento",
+      "C": "Criar backups automáticos de clusters",
+      "D": "Monitorar uso de recursos e custos"
+    },
+    "correctAnswer": "A",
+    "rationale": "DABs permitem definir pipelines, Jobs, permissões e recursos em YAML/JSON e deployar como código. Não comprimem dados, não fazem backups, e não monitoram custos.",
+    "tip": "DABs = Infrastructure as Code para Databricks."
+  },
+  {
+    "id": 21,
+    "category": "Delta Lake",
+    "difficulty": "intermediate",
+    "question": "O Transaction Log em Delta Lake armazena:",
+    "options": {
+      "A": "Apenas metadados de tabelas",
+      "B": "Um histórico completo de todas as mudanças (commits) em formato JSON",
+      "C": "Apenas dados deletados para recuperação",
+      "D": "Informações de permissões de usuários"
+    },
+    "correctAnswer": "B",
+    "rationale": "O Transaction Log (arquivo _delta_log) armazena um histórico completo de commits em JSON, permitindo Time Travel e recuperação. Não é limitado a metadados, dados deletados ou permissões.",
+    "tip": "Transaction Log = histórico de mudanças em JSON, base do Time Travel."
+  },
+  {
+    "id": 22,
+    "category": "Arquitetura Medallion",
+    "difficulty": "advanced",
+    "question": "Em um pipeline Medallion, qual é a melhor prática para tratamento de dados inválidos na camada Bronze?",
+    "options": {
+      "A": "Descartar dados inválidos imediatamente",
+      "B": "Armazenar dados inválidos em uma tabela separada para análise posterior",
+      "C": "Mover dados inválidos para a camada Silver com flag de qualidade",
+      "D": "Rejeitar a ingestão completamente se houver dados inválidos"
+    },
+    "correctAnswer": "B",
+    "rationale": "Dados inválidos devem ser armazenados em tabela separada (quarentena) para análise e correção posterior. Descartar perde informação. Mover para Silver contamina dados limpos. Rejeitar completamente interrompe pipeline.",
+    "tip": "Bronze deve capturar TUDO, inclusive dados problemáticos, em tabelas separadas."
+  },
+  {
+    "id": 23,
+    "category": "Unity Catalog",
+    "difficulty": "intermediate",
+    "question": "Qual é a diferença entre um Metastore e um Catalog no Unity Catalog?",
+    "options": {
+      "A": "Metastore é global; Catalog é específico de um workspace",
+      "B": "Metastore armazena dados; Catalog armazena metadados",
+      "C": "Catalog é global; Metastore é específico de um workspace",
+      "D": "Não há diferença; são sinônimos"
+    },
+    "correctAnswer": "A",
+    "rationale": "Metastore é a raiz global do Unity Catalog (um por conta). Catalogs são containers de schemas dentro de um Metastore. Ambos armazenam metadados, não dados. Metastore é compartilhado entre workspaces; Catalog é específico.",
+    "tip": "Metastore (1 por conta) > Catalog > Schema > Table (hierarquia)"
+  },
+  {
+    "id": 24,
+    "category": "Processamento de Dados",
+    "difficulty": "advanced",
+    "question": "Ao usar EXPLODE com um array que contém valores NULL, qual é o comportamento?",
+    "options": {
+      "A": "NULL é convertido em uma string 'null'",
+      "B": "A linha é descartada completamente",
+      "C": "NULL é tratado como um elemento do array",
+      "D": "EXPLODE falha com erro"
+    },
+    "correctAnswer": "C",
+    "rationale": "EXPLODE trata NULL como um elemento válido do array, criando uma linha com NULL. Não descarta a linha, não converte em string, e não falha.",
+    "tip": "EXPLODE preserva NULL como valor legítimo."
+  },
+  {
+    "id": 25,
+    "category": "Orquestração e DevOps",
+    "difficulty": "intermediate",
+    "question": "Service Principals em Databricks são usados para:",
+    "options": {
+      "A": "Autenticar aplicações e pipelines automatizadas sem credenciais de usuário",
+      "B": "Criar usuários administrativos com privilégios elevados",
+      "C": "Monitorar atividades de usuários para auditoria",
+      "D": "Sincronizar identidades com Active Directory"
+    },
+    "correctAnswer": "A",
+    "rationale": "Service Principals são identidades de máquina para autenticação de aplicações e CI/CD, sem credenciais de usuário. Não criam usuários admin, não monitoram atividades, e não sincronizam com AD.",
+    "tip": "Service Principals = identidades de máquina para automação."
+  },
+  {
+    "id": 26,
+    "category": "Delta Lake",
+    "difficulty": "advanced",
+    "question": "Você executa VACUUM com retenção de 7 dias em uma tabela Delta. Qual é o impacto em Time Travel?",
+    "options": {
+      "A": "Time Travel continua funcionando para versões anteriores a 7 dias",
+      "B": "Time Travel funciona apenas para versões dos últimos 7 dias",
+      "C": "Time Travel é desabilitado completamente",
+      "D": "VACUUM não afeta Time Travel"
+    },
+    "correctAnswer": "B",
+    "rationale": "VACUUM com retenção de 7 dias remove arquivos antigos, limitando Time Travel a versões dos últimos 7 dias. Versões anteriores não podem ser recuperadas. VACUUM afeta diretamente a capacidade de Time Travel.",
+    "tip": "VACUUM reduz retenção de Time Travel; configure retenção apropriadamente."
+  },
+  {
+    "id": 27,
+    "category": "Processamento de Dados",
+    "difficulty": "intermediate",
+    "question": "Em Spark SQL, qual função retorna o número de elementos em um array?",
+    "options": {
+      "A": "ARRAY_SIZE",
+      "B": "LENGTH",
+      "C": "COUNT",
+      "D": "SIZE"
+    },
+    "correctAnswer": "A",
+    "rationale": "ARRAY_SIZE retorna o número de elementos em um array. LENGTH é para strings. COUNT é para agregação. SIZE não é função válida em Spark SQL.",
+    "tip": "ARRAY_SIZE = tamanho de um array."
+  },
+  {
+    "id": 28,
+    "category": "Arquitetura Medallion",
+    "difficulty": "intermediate",
+    "question": "Qual camada da Arquitetura Medallion é mais apropriada para armazenar dados para relatórios executivos?",
+    "options": {
+      "A": "Bronze",
+      "B": "Silver",
+      "C": "Gold",
+      "D": "Todas as camadas igualmente"
+    },
+    "correctAnswer": "C",
+    "rationale": "Gold é a camada de dados refinados, agregados e prontos para relatórios executivos. Bronze é bruto, Silver é intermediário. Gold é otimizado para consumo de negócio.",
+    "tip": "Gold = dados prontos para executivos e dashboards."
+  },
+  {
+    "id": 29,
+    "category": "Unity Catalog",
+    "difficulty": "advanced",
+    "question": "Ao usar GRANT com Unity Catalog, qual é a diferença entre USAGE e SELECT?",
+    "options": {
+      "A": "USAGE permite acessar um schema; SELECT permite ler uma tabela",
+      "B": "Não há diferença; são sinônimos",
+      "C": "USAGE é para dados; SELECT é para metadados",
+      "D": "SELECT permite acessar um schema; USAGE permite ler uma tabela"
+    },
+    "correctAnswer": "A",
+    "rationale": "USAGE é permissão em schemas/catalogs (permite navegar). SELECT é permissão em tabelas (permite ler dados). Ambas são necessárias para acessar dados: USAGE no schema + SELECT na tabela.",
+    "tip": "USAGE (schema) + SELECT (tabela) = acesso completo a dados."
+  },
+  {
+    "id": 30,
+    "category": "Processamento de Dados",
+    "difficulty": "advanced",
+    "question": "Em Delta Live Tables, qual é a diferença entre uma VIEW e uma MATERIALIZED VIEW?",
+    "options": {
+      "A": "VIEW é calculada sob demanda; MATERIALIZED VIEW é pré-calculada e armazenada",
+      "B": "MATERIALIZED VIEW é mais rápida mas consome mais espaço",
+      "C": "VIEW não pode ter Expectations; MATERIALIZED VIEW pode",
+      "D": "Ambas A e B"
+    },
+    "correctAnswer": "D",
+    "rationale": "VIEW é calculada sob demanda (sem armazenamento). MATERIALIZED VIEW é pré-calculada e armazenada como tabela Delta, consumindo espaço mas oferecendo queries mais rápidas. Ambas podem ter Expectations.",
+    "tip": "MATERIALIZED VIEW = trade-off entre espaço e performance."
+  }
+]

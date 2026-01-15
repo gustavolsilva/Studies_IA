@@ -1,0 +1,201 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Databricks Brand Colors - Light Mode */
+  /* Lava 600: #FF3621, Navy 900: #0B2026, Oat Light: #F9F7F4, Oat Medium: #EEEDE9 */
+  
+  --primary: #FF3621;
+  --primary-foreground: #FFFFFF;
+  --sidebar-primary: #FF3621;
+  --sidebar-primary-foreground: #FFFFFF;
+  
+  --chart-1: #FF3621;
+  --chart-2: #0B2026;
+  --chart-3: #EEEDE9;
+  --chart-4: #F9F7F4;
+  --chart-5: #FF5C47;
+  
+  --radius: 0.65rem;
+  
+  /* Light Mode Colors */
+  --background: #F9F7F4;
+  --foreground: #0B2026;
+  --card: #FFFFFF;
+  --card-foreground: #0B2026;
+  --popover: #FFFFFF;
+  --popover-foreground: #0B2026;
+  --secondary: #EEEDE9;
+  --secondary-foreground: #0B2026;
+  --muted: #EEEDE9;
+  --muted-foreground: #6B7280;
+  --accent: #FF3621;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E7EB;
+  --input: #EEEDE9;
+  --ring: #FF3621;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0B2026;
+  --sidebar-accent: #F9F7F4;
+  --sidebar-accent-foreground: #FF3621;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #FF3621;
+}
+
+.dark {
+  /* Dark Mode Colors */
+  --primary: #FF3621;
+  --primary-foreground: #FFFFFF;
+  --sidebar-primary: #FF5C47;
+  --sidebar-primary-foreground: #FFFFFF;
+  
+  --background: #0B2026;
+  --foreground: #F9F7F4;
+  --card: #1A3A42;
+  --card-foreground: #F9F7F4;
+  --popover: #1A3A42;
+  --popover-foreground: #F9F7F4;
+  --secondary: #2D5563;
+  --secondary-foreground: #EEEDE9;
+  --muted: #2D5563;
+  --muted-foreground: #B3BAC1;
+  --accent: #FF3621;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #2D5563;
+  --input: #2D5563;
+  --ring: #FF3621;
+  --chart-1: #FF3621;
+  --chart-2: #FF5C47;
+  --chart-3: #EEEDE9;
+  --chart-4: #B3BAC1;
+  --chart-5: #6B7280;
+  --sidebar: #1A3A42;
+  --sidebar-foreground: #F9F7F4;
+  --sidebar-accent: #2D5563;
+  --sidebar-accent-foreground: #FF3621;
+  --sidebar-border: #2D5563;
+  --sidebar-ring: #FF3621;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'DM Sans', sans-serif;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+  
+  /* Databricks Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+  }
+  
+  code, pre {
+    font-family: 'DM Mono', monospace;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1280px;
+    }
+  }
+  
+  /* Databricks Brand Accents */
+  .databricks-accent {
+    @apply text-[#FF3621];
+  }
+  
+  .databricks-accent-bg {
+    @apply bg-[#FF3621];
+  }
+  
+  .databricks-navy {
+    @apply text-[#0B2026];
+  }
+  
+  .databricks-navy-bg {
+    @apply bg-[#0B2026];
+  }
+}
