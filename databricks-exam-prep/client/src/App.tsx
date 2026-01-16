@@ -10,6 +10,8 @@ import ExamMode from "./pages/ExamMode";
 import PracticeMode from "./pages/PracticeMode";
 import HistoryPage from "./pages/HistoryPage";
 import HistoryDetailsPage from "./pages/HistoryDetailsPage";
+import ComparePage from "./pages/ComparePage";
+import TopNav from "./components/TopNav";
 
 
 function Router() {
@@ -21,6 +23,7 @@ function Router() {
       <Route path={"/practice-mode"} component={PracticeMode} />
       <Route path={"/history/:id"} component={HistoryDetailsPage} />
       <Route path={"/history"} component={HistoryPage} />
+      <Route path={"/compare"} component={ComparePage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -42,6 +45,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
+          <TopNav />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

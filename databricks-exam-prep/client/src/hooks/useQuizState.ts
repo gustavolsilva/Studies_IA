@@ -1,24 +1,5 @@
 import { useState, useEffect } from 'react';
-
-export interface Question {
-  id: number;
-  category: string;
-  difficulty: 'intermediate' | 'advanced';
-  question: string;
-  options: {
-    A: string;
-    B: string;
-    C: string;
-    D: string;
-  };
-  correctAnswer: 'A' | 'B' | 'C' | 'D';
-  rationale: string;
-  tip: string;
-  officialReference?: {
-    title: string;
-    url: string;
-  };
-}
+import { loadQuestions, type Question as LoadedQuestion } from '@/lib/questionsLoader';
 
 export interface QuizStats {
   totalQuestions: number;
@@ -36,7 +17,7 @@ export interface UserAnswer {
 }
 
 export const useQuizState = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<LoadedQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -44,33 +25,20 @@ export const useQuizState = () => {
   const [quizFinished, setQuizFinished] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Carregar questões do JSON (tenta expandido primeiro, depois fallback)
+  // Carregar questões via loader (normaliza options_A/B/C/D → options)
   useEffect(() => {
-    const loadQuestions = async () => {
+    const doLoad = async () => {
       try {
-        // Tenta carregar o arquivo expandido com 3000 questões
-        const response = await fetch('/questions_expanded.json');
-        if (!response.ok) throw new Error('Arquivo expandido não encontrado');
-        const data: Question[] = await response.json();
+        const data = await loadQuestions();
         setQuestions(data);
         setUserAnswers(data.map(q => ({ questionId: q.id, answer: null, isCorrect: null })));
-        setLoading(false);
       } catch (error) {
-        console.warn('Erro ao carregar questões expandidas, tentando fallback:', error);
-        try {
-          // Fallback para arquivo original com 30 questões
-          const response = await fetch('/questions.json');
-          const data: Question[] = await response.json();
-          setQuestions(data);
-          setUserAnswers(data.map(q => ({ questionId: q.id, answer: null, isCorrect: null })));
-          setLoading(false);
-        } catch (fallbackError) {
-          console.error('Erro ao carregar questões de fallback:', fallbackError);
-          setLoading(false);
-        }
+        console.error('Erro ao carregar questões:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    loadQuestions();
+    doLoad();
   }, []);
 
   const currentQuestion = questions[currentQuestionIndex];

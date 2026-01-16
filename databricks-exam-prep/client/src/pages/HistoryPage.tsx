@@ -8,7 +8,7 @@ import { PerformanceChart } from '@/components/PerformanceChart';
 import { CategoryPerformanceChart } from '@/components/CategoryPerformanceChart';
 
 export default function HistoryPage() {
-  const { history, loading, deleteAttempt, clearHistory } = useQuizHistory();
+  const { history, loading, deleteAttempt, clearHistory, exportHistory, importHistory } = useQuizHistory();
 
   if (loading) {
     return (
@@ -180,17 +180,53 @@ export default function HistoryPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Simulados Realizados</h2>
               {history.totalAttempts > 0 && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
-                      clearHistory();
-                    }
-                  }}
-                >
-                  Limpar Histórico
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const blob = new Blob([exportHistory()], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `dbx-history-${new Date().toISOString().slice(0,10)}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    Exportar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'application/json';
+                      input.onchange = async () => {
+                        const file = input.files?.[0];
+                        if (!file) return;
+                        const text = await file.text();
+                        const ok = importHistory(text);
+                        if (!ok) alert('Falha ao importar histórico.');
+                      };
+                      input.click();
+                    }}
+                  >
+                    Importar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                        clearHistory();
+                      }
+                    }}
+                  >
+                    Limpar Histórico
+                  </Button>
+                </div>
               )}
             </div>
 
