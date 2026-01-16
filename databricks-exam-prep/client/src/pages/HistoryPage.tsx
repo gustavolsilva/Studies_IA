@@ -78,9 +78,7 @@ export default function HistoryPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/">
-            <a className="text-primary hover:underline mb-4 inline-block">← Voltar</a>
-          </Link>
+          <Link href="/" className="text-primary hover:underline mb-4 inline-block">← Voltar</Link>
           <h1 className="text-4xl font-bold text-primary mb-2">Histórico de Simulados</h1>
           <p className="text-muted-foreground">Acompanhe seu progresso e desempenho</p>
         </div>
@@ -201,9 +199,7 @@ export default function HistoryPage() {
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                 <p className="text-muted-foreground mb-4">Nenhum simulado realizado ainda</p>
                 <Link href="/">
-                  <a>
-                    <Button variant="default">Começar Simulado</Button>
-                  </a>
+                  <Button variant="default">Começar Simulado</Button>
                 </Link>
               </div>
             ) : (
@@ -240,12 +236,10 @@ export default function HistoryPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Link href={`/history/${attempt.id}`}>
-                          <a>
-                            <Button variant="outline" size="sm" className="gap-2">
-                              Detalhes
-                              <ChevronRight className="h-4 w-4" />
-                            </Button>
-                          </a>
+                          <Button variant="outline" size="sm" className="gap-2">
+                            Detalhes
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
                         </Link>
                         <Button
                           variant="ghost"

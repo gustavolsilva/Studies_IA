@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Clock, Settings, Check } from "lucide-react";
 import { useQuizHistory } from "@/hooks/useQuizHistory";
+import { shuffleArray } from "@/lib/utils";
 
 interface Question {
   id: number;
@@ -68,9 +69,14 @@ export default function PracticeMode() {
   // Iniciar prática
   const handleStartPractice = () => {
     const filtered = allQuestions.filter((q: Question) => selectedCategories.includes(q.category));
-    const shuffled = filtered.sort(() => Math.random() - 0.5);
+    // Usar Fisher-Yates shuffle para garantir aleatoriedade verdadeira
+    const shuffled = shuffleArray(filtered);
     const selected = shuffled.slice(0, Math.min(numQuestions, filtered.length));
     setQuestions(selected);
+    setCurrentIndex(0);
+    setAnswers([]);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
     setTimeLeft(timeLimit * 60);
     setStage("practice");
   };
@@ -186,11 +192,11 @@ export default function PracticeMode() {
 
   const handlePreviousQuestion = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      const prevAnswer = answers.find((a) => a.questionId === questions[currentIndex - 1].id);
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+      const prevAnswer = answers.find((a) => a.questionId === questions[newIndex].id);
       setSelectedAnswer(prevAnswer?.selectedAnswer || null);
-      setShowFeedback(true);
-      setAnswers(answers.slice(0, -1));
+      setShowFeedback(prevAnswer !== undefined);
     }
   };
 
