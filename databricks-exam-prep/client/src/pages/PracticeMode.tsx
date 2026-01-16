@@ -475,6 +475,21 @@ export default function PracticeMode() {
                     </Button>
                   )}
                 </div>
+                
+                {/* Botão de Sair (aparece durante a prática) */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (confirm('Tem certeza que deseja sair? Seu progresso será perdido.')) {
+                        setLocation('/mode-selection');
+                      }
+                    }}
+                    className="w-full text-muted-foreground hover:text-foreground"
+                  >
+                    Sair do Simulado
+                  </Button>
+                </div>
               </Card>
             </div>
 
@@ -604,14 +619,23 @@ export default function PracticeMode() {
             </Card>
 
             {/* Botões */}
-            <div className="flex gap-4">
-              <Button
-                variant="outline"
-                onClick={() => setLocation("/mode-selection")}
-                className="flex-1"
-              >
-                Voltar ao Menu
-              </Button>
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setLocation("/")}
+                  className="flex-1"
+                >
+                  Voltar para Home
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setLocation("/mode-selection")}
+                  className="flex-1"
+                >
+                  Voltar ao Menu
+                </Button>
+              </div>
               <Button
                 onClick={() => {
                   setStage("config");
@@ -620,7 +644,7 @@ export default function PracticeMode() {
                   setSelectedAnswer(null);
                   setShowFeedback(false);
                 }}
-                className="flex-1"
+                className="w-full"
               >
                 Fazer Outro Simulado
               </Button>

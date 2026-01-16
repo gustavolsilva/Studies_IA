@@ -322,17 +322,26 @@ export default function ExamMode() {
             </Card>
 
             {/* Botões */}
-            <div className="flex gap-4">
-              <Button
-                onClick={() => setLocation("/mode-selection")}
-                variant="outline"
-                className="flex-1"
-              >
-                Voltar ao Menu
-              </Button>
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => setLocation("/")}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Voltar para Home
+                </Button>
+                <Button
+                  onClick={() => setLocation("/mode-selection")}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Voltar ao Menu
+                </Button>
+              </div>
               <Button
                 onClick={startNewExam}
-                className="flex-1 bg-primary hover:bg-primary/90"
+                className="w-full bg-primary hover:bg-primary/90"
               >
                 Fazer Outra Prova
               </Button>
