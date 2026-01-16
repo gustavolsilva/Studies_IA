@@ -2,7 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import type { QuizStats } from '@/hooks/useQuizState';
-import { BarChart3, TrendingUp, Trophy, RefreshCw } from 'lucide-react';
+import { BarChart3, TrendingUp, Trophy, RefreshCw, Home } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 interface ResultsScreenProps {
   stats: QuizStats;
@@ -10,6 +11,7 @@ interface ResultsScreenProps {
 }
 
 export default function ResultsScreen({ stats, onRestart }: ResultsScreenProps) {
+  const [, setLocation] = useLocation();
   const correctPercentage = Math.round((stats.correct / stats.totalQuestions) * 100);
   const isPassed = correctPercentage >= 70;
 
@@ -147,15 +149,26 @@ export default function ResultsScreen({ stats, onRestart }: ResultsScreenProps) 
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 justify-center">
-          <Button
-            onClick={onRestart}
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold"
-          >
-            <RefreshCw className="w-5 h-5 mr-2" />
-            Refazer Simulado
-          </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-4 justify-center">
+            <Button
+              onClick={() => setLocation("/")}
+              variant="outline"
+              size="lg"
+              className="px-8 py-6 text-base font-semibold flex items-center gap-2"
+            >
+              <Home className="w-5 h-5" />
+              Voltar para Home
+            </Button>
+            <Button
+              onClick={onRestart}
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold"
+            >
+              <RefreshCw className="w-5 h-5 mr-2" />
+              Refazer Simulado
+            </Button>
+          </div>
         </div>
       </div>
     </div>
