@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Clock, AlertCircle } from "lucide-react";
+import { useQuizHistory } from "@/hooks/useQuizHistory";
+import { shuffleArray } from "@/lib/utils";
 
 interface Question {
   id: number;
@@ -23,7 +25,9 @@ interface Answer {
 }
 
 export default function ExamMode() {
-  const [, setLocation] = useLocation();
+  const [location] = useLocation();
+  const { saveAttempt } = useQuizHistory();
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
@@ -31,15 +35,19 @@ export default function ExamMode() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [loading, setLoading] = useState(true);
+  const startTimeRef = useRef<number>(Date.now());
+  const savedRef = useRef<boolean>(false);
+  const lastLocationRef = useRef<string>("");
 
-  // Carregar questões
+  // Carregar todas as questões uma vez
   useEffect(() => {
     const loadQuestions = async () => {
       try {
         const response = await fetch("/questions_expanded.json");
-        const allQuestions = await response.json();
-        // Selecionar 45 questões aleatórias
-        const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+        const loadedQuestions = await response.json();
+        setAllQuestions(loadedQuestions);
+        // Embaralhar e selecionar 45 questões aleatórias na primeira carga
+        const shuffled = shuffleArray(loadedQuestions);
         setQuestions(shuffled.slice(0, 45));
         setLoading(false);
       } catch (error) {
@@ -49,6 +57,45 @@ export default function ExamMode() {
     };
     loadQuestions();
   }, []);
+
+  // Reembaralhar questões quando o usuário navega para esta página (apenas se não estiver em uma prova ativa)
+  useEffect(() => {
+    // Se mudou de rota para /exam-mode, não está em uma prova ativa (showResults ou answers vazio), e já temos questões carregadas
+    if (
+      location === "/exam-mode" && 
+      lastLocationRef.current !== location && 
+      allQuestions.length > 0 && 
+      !loading &&
+      (showResults || answers.length === 0)
+    ) {
+      const shuffled = shuffleArray(allQuestions);
+      setQuestions(shuffled.slice(0, 45));
+      setCurrentIndex(0);
+      setAnswers([]);
+      setSelectedAnswer(null);
+      setShowResults(false);
+      setTimeLeft(90 * 60);
+      startTimeRef.current = Date.now();
+      savedRef.current = false;
+    }
+    lastLocationRef.current = location;
+  }, [location, allQuestions.length, loading, showResults, answers.length]);
+
+  // Função para iniciar uma nova prova com questões diferentes
+  const startNewExam = () => {
+    if (allQuestions.length === 0) return;
+    
+    // Reembaralhar todas as questões e selecionar 45 novas
+    const shuffled = shuffleArray(allQuestions);
+    setQuestions(shuffled.slice(0, 45));
+    setCurrentIndex(0);
+    setAnswers([]);
+    setSelectedAnswer(null);
+    setShowResults(false);
+    setTimeLeft(90 * 60);
+    startTimeRef.current = Date.now();
+    savedRef.current = false;
+  };
 
   // Temporizador
   useEffect(() => {
@@ -66,6 +113,13 @@ export default function ExamMode() {
 
     return () => clearInterval(timer);
   }, [showResults, loading]);
+
+  // Salvar tentativa quando mostrar resultados
+  useEffect(() => {
+    if (showResults && !savedRef.current && answers.length > 0 && questions.length > 0) {
+      saveExamAttempt();
+    }
+  }, [showResults]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -100,15 +154,65 @@ export default function ExamMode() {
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      const prevAnswer = answers.find((a) => a.questionId === questions[currentIndex - 1].id);
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+      const prevAnswer = answers.find((a) => a.questionId === questions[newIndex].id);
       setSelectedAnswer(prevAnswer?.selectedAnswer || null);
-      setAnswers(answers.slice(0, -1));
     }
   };
 
   const handleFinish = () => {
     setShowResults(true);
+    saveExamAttempt();
+  };
+
+  const saveExamAttempt = () => {
+    if (savedRef.current || answers.length === 0) return;
+    savedRef.current = true;
+
+    const timeSpent = 90 * 60 - timeLeft;
+    const categoryStats: Record<string, { correct: number; total: number }> = {};
+    const difficultyStats: Record<string, { correct: number; total: number }> = {};
+
+    questions.forEach((q) => {
+      const answer = answers.find((a) => a.questionId === q.id);
+      if (!categoryStats[q.category]) {
+        categoryStats[q.category] = { correct: 0, total: 0 };
+      }
+      if (!difficultyStats[q.difficulty]) {
+        difficultyStats[q.difficulty] = { correct: 0, total: 0 };
+      }
+      categoryStats[q.category].total += 1;
+      difficultyStats[q.difficulty].total += 1;
+      if (answer?.isCorrect) {
+        categoryStats[q.category].correct += 1;
+        difficultyStats[q.difficulty].correct += 1;
+      }
+    });
+
+    saveAttempt({
+      mode: 'exam',
+      startTime: startTimeRef.current,
+      endTime: Date.now(),
+      totalQuestions: questions.length,
+      correctAnswers: answers.filter((a) => a.isCorrect).length,
+      incorrectAnswers: answers.filter((a) => !a.isCorrect).length,
+      skippedQuestions: questions.length - answers.length,
+      timeSpent,
+      categoryStats,
+      difficultyStats,
+      answers: answers.map((a) => {
+        const q = questions.find((q) => q.id === a.questionId)!;
+        return {
+          questionId: a.questionId.toString(),
+          selected: a.selectedAnswer,
+          correct: q.correctAnswer,
+          isCorrect: a.isCorrect,
+          category: q.category,
+          difficulty: q.difficulty,
+        };
+      }),
+    });
   };
 
   if (loading) {
@@ -227,7 +331,7 @@ export default function ExamMode() {
                 Voltar ao Menu
               </Button>
               <Button
-                onClick={() => setLocation("/exam-mode")}
+                onClick={startNewExam}
                 className="flex-1 bg-primary hover:bg-primary/90"
               >
                 Fazer Outra Prova

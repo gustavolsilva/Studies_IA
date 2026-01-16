@@ -9,6 +9,7 @@ import ModeSelection from "./pages/ModeSelection";
 import ExamMode from "./pages/ExamMode";
 import PracticeMode from "./pages/PracticeMode";
 import HistoryPage from "./pages/HistoryPage";
+import HistoryDetailsPage from "./pages/HistoryDetailsPage";
 
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path={"/mode-selection"} component={ModeSelection} />
       <Route path={"/exam-mode"} component={ExamMode} />
       <Route path={"/practice-mode"} component={PracticeMode} />
+      <Route path={"/history/:id"} component={HistoryDetailsPage} />
       <Route path={"/history"} component={HistoryPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
