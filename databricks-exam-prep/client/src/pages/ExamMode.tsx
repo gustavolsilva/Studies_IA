@@ -5,18 +5,7 @@ import { useLocation } from "wouter";
 import { Clock, AlertCircle } from "lucide-react";
 import { useQuizHistory } from "@/hooks/useQuizHistory";
 import { shuffleArray } from "@/lib/utils";
-
-interface Question {
-  id: number;
-  question: string;
-  options: { A: string; B: string; C: string; D: string };
-  correctAnswer: string;
-  category: string;
-  difficulty: string;
-  rationale: string;
-  tip: string;
-  officialReference: { title: string; url: string };
-}
+import { loadQuestions, type Question } from "@/lib/questionsLoader";
 
 interface Answer {
   questionId: number;
@@ -25,7 +14,7 @@ interface Answer {
 }
 
 export default function ExamMode() {
-  const [location] = useLocation();
+  const [, setLocation] = useLocation();
   const { saveAttempt } = useQuizHistory();
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -37,39 +26,29 @@ export default function ExamMode() {
   const [loading, setLoading] = useState(true);
   const startTimeRef = useRef<number>(Date.now());
   const savedRef = useRef<boolean>(false);
-  const lastLocationRef = useRef<string>("");
 
   // Carregar todas as questões uma vez
   useEffect(() => {
-    const loadQuestions = async () => {
+    const loadQuestionsData = async () => {
       try {
-        const response = await fetch("/questions_expanded.json");
-        const loadedQuestions = await response.json();
-        setAllQuestions(loadedQuestions);
-        // Embaralhar e selecionar 45 questões aleatórias na primeira carga
-        const shuffled = shuffleArray(loadedQuestions);
+        const loaded = await loadQuestions();
+        setAllQuestions(loaded);
+        const shuffled = shuffleArray(loaded);
         setQuestions(shuffled.slice(0, 45));
-        setLoading(false);
       } catch (error) {
         console.error("Erro ao carregar questões:", error);
+      } finally {
         setLoading(false);
       }
     };
-    loadQuestions();
+    loadQuestionsData();
   }, []);
 
-  // Reembaralhar questões quando o usuário navega para esta página (apenas se não estiver em uma prova ativa)
+  // Reembaralhar questões quando o componente monta (inicial)
   useEffect(() => {
-    // Se mudou de rota para /exam-mode, não está em uma prova ativa (showResults ou answers vazio), e já temos questões carregadas
-    if (
-      location === "/exam-mode" && 
-      lastLocationRef.current !== location && 
-      allQuestions.length > 0 && 
-      !loading &&
-      (showResults || answers.length === 0)
-    ) {
-      const shuffled = shuffleArray(allQuestions);
-      setQuestions(shuffled.slice(0, 45));
+    if (allQuestions.length > 0 && !loading && questions.length === 0) {
+      const selected = selectBalancedQuestions(allQuestions, 45);
+      setQuestions(selected);
       setCurrentIndex(0);
       setAnswers([]);
       setSelectedAnswer(null);
@@ -78,16 +57,15 @@ export default function ExamMode() {
       startTimeRef.current = Date.now();
       savedRef.current = false;
     }
-    lastLocationRef.current = location;
-  }, [location, allQuestions.length, loading, showResults, answers.length]);
+  }, [allQuestions.length, loading, questions.length]);
 
   // Função para iniciar uma nova prova com questões diferentes
   const startNewExam = () => {
     if (allQuestions.length === 0) return;
     
-    // Reembaralhar todas as questões e selecionar 45 novas
-    const shuffled = shuffleArray(allQuestions);
-    setQuestions(shuffled.slice(0, 45));
+    // Selecionar 45 questões balanceadas por categoria
+    const selected = selectBalancedQuestions(allQuestions, 45);
+    setQuestions(selected);
     setCurrentIndex(0);
     setAnswers([]);
     setSelectedAnswer(null);
@@ -95,6 +73,53 @@ export default function ExamMode() {
     setTimeLeft(90 * 60);
     startTimeRef.current = Date.now();
     savedRef.current = false;
+  };
+
+  // Função para selecionar questões balanceadas por categoria (conforme guia oficial Databricks)
+  // Distribuição esperada no exame: 20% cada categoria principal
+  const selectBalancedQuestions = (allQuestions: Question[], count: number): Question[] => {
+    const categoryDistribution: { [key: string]: number } = {
+      "Databricks Intelligence Platform": Math.round(count * 0.20),
+      "Development and Ingestion": Math.round(count * 0.20),
+      "Data Processing & Transformations": Math.round(count * 0.20),
+      "Data Governance & Quality": Math.round(count * 0.20),
+      "Productionizing Data Pipelines": Math.round(count * 0.20)
+    };
+
+    const selected: Question[] = [];
+    const usedQuestionIds = new Set<number>();
+
+    // Selecionar questões por categoria mantendo proporção
+    Object.entries(categoryDistribution).forEach(([category, targetCount]) => {
+      const categoryQuestions = allQuestions.filter(
+        (q) => q.category === category && !usedQuestionIds.has(q.id)
+      );
+
+      // Embaralhar questões da categoria
+      const shuffled = shuffleArray(categoryQuestions);
+
+      // Pegar apenas o número necessário
+      const toTake = Math.min(targetCount, shuffled.length);
+      for (let i = 0; i < toTake; i++) {
+        selected.push(shuffled[i]);
+        usedQuestionIds.add(shuffled[i].id);
+      }
+    });
+
+    // Se não conseguimos 45 questões, preencher com questões aleatórias não usadas
+    if (selected.length < count) {
+      const remaining = allQuestions.filter(
+        (q) => !usedQuestionIds.has(q.id)
+      );
+      const shuffled = shuffleArray(remaining);
+      const needed = count - selected.length;
+      for (let i = 0; i < needed && i < shuffled.length; i++) {
+        selected.push(shuffled[i]);
+      }
+    }
+
+    // Embaralhar ordem final para não aparecer na ordem de categoria
+    return shuffleArray(selected);
   };
 
   // Temporizador
@@ -307,14 +332,16 @@ export default function ExamMode() {
                           </p>
                         </div>
                         <p className="text-xs text-muted-foreground mb-2">{question?.rationale}</p>
-                        <a
-                          href={question?.officialReference.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline"
-                        >
-                          📚 {question?.officialReference.title}
-                        </a>
+                        {question?.officialReference && (
+                          <a
+                            href={question.officialReference.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            📚 {question.officialReference.title}
+                          </a>
+                        )}
                       </div>
                     );
                   })}

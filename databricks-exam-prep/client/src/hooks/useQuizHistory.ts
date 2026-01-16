@@ -195,6 +195,34 @@ export function useQuizHistory() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
   };
 
+  // Exportar histórico em JSON
+  const exportHistory = () => {
+    if (!history) return '';
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      history,
+    };
+    return JSON.stringify(payload, null, 2);
+  };
+
+  // Importar histórico a partir de JSON
+  const importHistory = (jsonStr: string) => {
+    try {
+      const data = JSON.parse(jsonStr);
+      if (!data || !data.history || !Array.isArray(data.history.attempts)) {
+        throw new Error('Formato inválido');
+      }
+      const imported: QuizHistory = data.history as QuizHistory;
+      setHistory(imported);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(imported));
+      return true;
+    } catch (e) {
+      console.error('Falha ao importar histórico:', e);
+      return false;
+    }
+  };
+
   return {
     history,
     loading,
@@ -204,5 +232,7 @@ export function useQuizHistory() {
     getDifficultyStats,
     clearHistory,
     deleteAttempt,
+    exportHistory,
+    importHistory,
   };
 }

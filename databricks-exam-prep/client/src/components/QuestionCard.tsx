@@ -26,7 +26,9 @@ export default function QuestionCard({
   };
 
   const getDifficultyLabel = (difficulty: string) => {
-    return difficulty === 'advanced' ? 'Avançado' : 'Intermediário';
+    if (difficulty === 'advanced') return 'Avançado';
+    if (difficulty === 'foundational') return 'Fundamental';
+    return 'Intermediário';
   };
 
   const getCategoryColor = (category: string) => {

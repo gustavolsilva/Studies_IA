@@ -1,0 +1,569 @@
+[
+  {
+    "id": 1,
+    "category": "Databricks Intelligence Platform",
+    "difficulty": "foundational",
+    "questionType": "conceptual",
+    "question": "O que diferencia o Lakehouse de um Data Warehouse tradicional?",
+    "options": {
+      "A": "Lakehouse combina flexibilidade de Data Lakes com ACID compliance de Data Warehouses em uma única plataforma",
+      "B": "Lakehouse é apenas um Data Lake com queries SQL",
+      "C": "Lakehouse substitui completamente os Data Warehouses",
+      "D": "Lakehouse só funciona com dados estruturados"
+    },
+    "correctAnswer": "A",
+    "rationale": "O Lakehouse da Databricks combina o melhor dos dois mundos: a flexibilidade de esquema e processamento de big data de um Data Lake com as garantias ACID e performance de query de um Data Warehouse. Isso permite governança forte, data quality assurance e performance analítica tudo em uma plataforma unificada.",
+    "tip": "Pense em Lakehouse como a evolução dos data warehouses, não um substituto. Permite dados brutos e processados no mesmo lugar.",
+    "officialReference": {
+      "title": "Lakehouse Overview - Databricks",
+      "url": "https://docs.databricks.com/en/lakehouse/index.html"
+    },
+    "contextScenario": "Escolhendo arquitetura de dados em uma organização"
+  },
+  {
+    "id": 2,
+    "category": "Databricks Intelligence Platform",
+    "difficulty": "intermediate",
+    "questionType": "conceptual",
+    "question": "Qual é o objetivo principal do Unity Catalog?",
+    "options": {
+      "A": "Centralizar governança de dados, permissões e linhagem de dados em workspaces Databricks",
+      "B": "Automaticamente converter dados em formatos otimizados",
+      "C": "Apenas gerenciar metadados de tabelas externas",
+      "D": "Substituir Delta Lake com um novo formato de armazenamento"
+    },
+    "correctAnswer": "A",
+    "rationale": "Unity Catalog fornece governança unificada de dados em múltiplos workspaces e clouds. Oferece: controle de acesso granular (row-level, column-level), lineage tracking, audit logs, e uma vista única de todos os dados da organização. É a resposta da Databricks para governança moderna.",
+    "tip": "UC = Governança centralizada. Pense em permissões, auditoria, linhagem.",
+    "officialReference": {
+      "title": "Unity Catalog - Data Governance",
+      "url": "https://docs.databricks.com/en/data-governance/unity-catalog/index.html"
+    },
+    "contextScenario": "Governança em uma empresa multi-workspace"
+  },
+  {
+    "id": 3,
+    "category": "Databricks Intelligence Platform",
+    "difficulty": "intermediate",
+    "questionType": "code_interpretation",
+    "question": "Qual será o resultado deste código?\n```python\ndf = spark.read.format(\"delta\").load(\"/data/events\")\ndf.write.format(\"delta\").mode(\"append\").save(\"/data/events\")\n```\n",
+    "options": {
+      "A": "Duplicará os dados existentes na tabela",
+      "B": "Sobrescreverá os dados existentes",
+      "C": "Lançará um erro porque não há 'saveAsTable'",
+      "D": "Criará uma nova versão do Delta sem duplicar dados"
+    },
+    "correctAnswer": "A",
+    "rationale": "O modo 'append' insere novos dados à tabela sem remover os existentes. Como estamos lendo e escrevendo no mesmo local, todos os dados de '/data/events' serão duplicados. Delta manterá ambas as versões no histórico de transações (Time Travel), mas os dados estarão duplicados no arquivo.",
+    "tip": "Modo 'append' = INSERE (não substitui). Se ler e reescrever do mesmo lugar, haverá duplicação.",
+    "officialReference": {
+      "title": "Delta Lake Documentation",
+      "url": "https://docs.databricks.com/en/delta/index.html"
+    },
+    "contextScenario": "Processamento ETL com Delta Lake"
+  },
+  {
+    "id": 4,
+    "category": "Databricks Intelligence Platform",
+    "difficulty": "intermediate",
+    "questionType": "troubleshooting",
+    "question": "Um job está falhando frequentemente com erro 'Out of Memory' durante transformações de 100GB. Qual é a solução mais eficiente?",
+    "options": {
+      "A": "Aumentar o número de workers e usar spilling de memória",
+      "B": "Repartir o DataFrame para distribuir melhor a carga entre workers",
+      "C": "Usar modo de single-machine processing em um driver mais potente",
+      "D": "Converter para Pandas e processar localmente"
+    },
+    "correctAnswer": "B",
+    "rationale": "Reparticionamento distribui dados mais uniformemente entre os executores, evitando gargalos de memória. Com 100GB, a chave é paralelização eficiente. Aumentar workers é mais caro; single-machine e Pandas resultarão em falhas ainda piores. Use df.repartition(n) ou particione por chave de negócio.",
+    "tip": "Out of Memory em Spark = problema de distribuição. Reparticione para balancear carga.",
+    "officialReference": {
+      "title": "Spark SQL API",
+      "url": "https://docs.databricks.com/en/sql/language-manual/index.html"
+    },
+    "contextScenario": "Troubleshooting performance de jobs"
+  },
+  {
+    "id": 5,
+    "category": "Databricks Intelligence Platform",
+    "difficulty": "advanced",
+    "questionType": "architecture",
+    "question": "Uma empresa tem um Data Warehouse em Snowflake e quer migrar para Databricks Lakehouse. Qual é a estratégia mais adequada?",
+    "options": {
+      "A": "Big bang: parar tudo, exportar dados e importar para Databricks",
+      "B": "Dual-write: escrever dados simultaneamente em Snowflake e Databricks enquanto valida resultados",
+      "C": "Criar Delta tables em Databricks, replicar dados históricos e fazer validação antes de cutover",
+      "D": "Manter Snowflake como origem e conectar Databricks para queries federadas"
+    },
+    "correctAnswer": "C",
+    "rationale": "A estratégia ideal é: (1) Criar equivalentes em Delta para cada tabela Snowflake, (2) Replicar dados históricos com validação de integridade, (3) Testar queries e performance em paralelo, (4) Executar cutover gradual por domínio de negócio. Evita risco do big bang, oferece rollback e validação contínua.",
+    "tip": "Migrações = risco. Use estratégia em fases com validação, não big bang.",
+    "officialReference": {
+      "title": "Delta Lake Documentation",
+      "url": "https://docs.databricks.com/en/delta/index.html"
+    },
+    "contextScenario": "Migração de Data Warehouse tradicional"
+  },
+  {
+    "id": 6,
+    "category": "Databricks Intelligence Platform",
+    "difficulty": "intermediate",
+    "questionType": "conceptual",
+    "question": "O que oferece o Photon Runtime do Databricks?",
+    "options": {
+      "A": "Compilação nativa de código para 10-100x mais performance em SQL workloads",
+      "B": "Uma API GraphQL para queries mais simples",
+      "C": "Apenas compressão automática de dados",
+      "D": "Um substituto do Apache Spark"
+    },
+    "correctAnswer": "A",
+    "rationale": "Photon é um mecanismo de execução nativo otimizado para SQL que oferece 10-100x aceleração em certos workloads. Implementa físicamente operadores de query (joins, aggregations) em C++, eliminando overhead de JVM. Ideal para analytics pesados e BI.",
+    "tip": "Photon = aceleração de SQL. Pense em compilação nativa, não novo framework.",
+    "officialReference": {
+      "title": "Databricks Compute",
+      "url": "https://docs.databricks.com/en/compute/index.html"
+    },
+    "contextScenario": "Otimizando performance de analytics queries"
+  },
+  {
+    "id": 7,
+    "category": "Development and Ingestion",
+    "difficulty": "foundational",
+    "questionType": "conceptual",
+    "question": "Qual é a principal vantagem do Auto Loader comparado a read() tradicional?",
+    "options": {
+      "A": "Detecção automática de novos arquivos no S3/ADLS com processamento incremental",
+      "B": "Codificação automática de dados em UTF-8",
+      "C": "Apenas funciona com Parquet, não com CSV",
+      "D": "Aumenta a velocidade de leitura em 10x"
+    },
+    "correctAnswer": "A",
+    "rationale": "Auto Loader (cloudFiles) monitora um caminho e processa apenas arquivos novos. Mantém checkpoint de quais arquivos foram processados, oferecendo exactly-once semantics. Ideal para pipelines de ingestão contínua. Suporta múltiplos formatos (CSV, Parquet, JSON, etc) e cloud storage.",
+    "tip": "Auto Loader = detecção automática de novos arquivos. Para ingestão incremental.",
+    "officialReference": {
+      "title": "Auto Loader",
+      "url": "https://docs.databricks.com/en/ingestion/auto-loader/index.html"
+    },
+    "contextScenario": "Building data pipelines com dados em chegada contínua"
+  },
+  {
+    "id": 8,
+    "category": "Development and Ingestion",
+    "difficulty": "intermediate",
+    "questionType": "code_interpretation",
+    "question": "Qual será o resultado deste código?\n```python\ndf = spark.createDataFrame([(1, \"a\"), (2, None), (3, \"c\")], [\"id\", \"value\"])\nresult = df.filter(col(\"value\") != \"a\").select(\"id\")\nresult.show()\n```\n",
+    "options": {
+      "A": "Mostrará ids 2 e 3",
+      "B": "Mostrará apenas id 3",
+      "C": "Mostrará ids 1, 2 e 3",
+      "D": "Lançará erro porque value é None"
+    },
+    "correctAnswer": "B",
+    "rationale": "Em SQL/Spark, comparações com NULL retornam NULL (não true/false). 'None != a' = NULL, então a linha é filtrada. A comparação 'None != a' não satisfaz a condição WHERE. Resultado: apenas id 3 passa pelo filter.",
+    "tip": "NULL handling = crítico em Spark. != com NULL retorna NULL, não true.",
+    "officialReference": {
+      "title": "PySpark API Reference",
+      "url": "https://spark.apache.org/docs/latest/api/python/"
+    },
+    "contextScenario": "ETL com PySpark transformations"
+  },
+  {
+    "id": 9,
+    "category": "Development and Ingestion",
+    "difficulty": "intermediate",
+    "questionType": "code_interpretation",
+    "question": "O que acontece com este código?\n```python\ndf = spark.readStream.format(\"csv\").option(\"path\", \"/source\").load()\ndf.show(10)\n```\n",
+    "options": {
+      "A": "Mostra os primeiros 10 registros do stream",
+      "B": "Lança erro porque readStream requer writeStream antes de show()",
+      "C": "Bloqueia indefinidamente esperando mais dados",
+      "D": "Processa dados em micro-batches e não retorna control"
+    },
+    "correctAnswer": "B",
+    "rationale": "readStream() cria um DataFrame de streaming que requer um query ativo (writeStream) para processar dados. Você não pode chamar .show() diretamente em um DataFrame de streaming - precisa de um StreamingQuery com writeStream para processar e exibir dados. Uso correto: stream_df.writeStream.format(...).start()",
+    "tip": "Streaming = requer writeStream. readStream sozinho não faz nada.",
+    "officialReference": {
+      "title": "Structured Streaming",
+      "url": "https://docs.databricks.com/en/structured-streaming/index.html"
+    },
+    "contextScenario": "Building Structured Streaming pipelines"
+  },
+  {
+    "id": 10,
+    "category": "Development and Ingestion",
+    "difficulty": "advanced",
+    "questionType": "troubleshooting",
+    "question": "Um pipeline Auto Loader para JSON falha quando novos campos são adicionados aos registros JSON. Como resolver?",
+    "options": {
+      "A": "Adicionar option('mergeSchema', 'true') ao Auto Loader",
+      "B": "Recriar toda a tabela com novo schema",
+      "C": "Usar jsonSchema explícito para bloquear novos campos",
+      "D": "Converter JSON para Parquet antes de ingerir"
+    },
+    "correctAnswer": "A",
+    "rationale": "Auto Loader com mergeSchema=true combina schemas de novos dados com o schema existente. Permite evoluir o schema conforme novos campos aparecem, sem quebrar o pipeline. Sintaxe: .option('mergeSchema', 'true'). Alternativa: definir schemaEvolutionMode no DLT.",
+    "tip": "Schema evolution em Auto Loader = mergeSchema: true. Permite novos campos.",
+    "officialReference": {
+      "title": "Auto Loader",
+      "url": "https://docs.databricks.com/en/ingestion/auto-loader/index.html"
+    },
+    "contextScenario": "Ingestão robusta de dados semi-estruturados"
+  },
+  {
+    "id": 11,
+    "category": "Development and Ingestion",
+    "difficulty": "intermediate",
+    "questionType": "architecture",
+    "question": "Quando usar Structured Streaming vs batch processing em Databricks?",
+    "options": {
+      "A": "Streaming para dados históricos, batch para real-time",
+      "B": "Streaming para dados chegando continuamente com latência baixa (segundos/minutos). Batch para processamento de histórico/data bulks",
+      "C": "Sempre use streaming para melhor performance",
+      "D": "Batch é mais eficiente; streaming nunca deve ser usado"
+    },
+    "correctAnswer": "B",
+    "rationale": "Streaming é ideal para pipelines contínuas onde novos eventos chegam regularmente e precisam de processamento com baixa latência. Batch é eficiente para dados históricos ou grandes volumes não-contínuos. Combinar: ingestão inicial com batch, depois manutenção com streaming incremental.",
+    "tip": "Streaming = continuous low-latency. Batch = bulk historical.",
+    "officialReference": {
+      "title": "Structured Streaming",
+      "url": "https://docs.databricks.com/en/structured-streaming/index.html"
+    },
+    "contextScenario": "Escolhendo arquitetura de processamento"
+  },
+  {
+    "id": 12,
+    "category": "Development and Ingestion",
+    "difficulty": "advanced",
+    "questionType": "conceptual",
+    "question": "Como Auto Loader + Delta Lake garante 'exactly-once' semantics?",
+    "options": {
+      "A": "Lê arquivo uma única vez e descarta duplicatas",
+      "B": "Mantém checkpoint de arquivos já processados e combina com ACID transactions do Delta",
+      "C": "Compara checksums de arquivos para evitar duplicação",
+      "D": "Apenas processa em uma única partição"
+    },
+    "correctAnswer": "B",
+    "rationale": "Auto Loader mantém checkpoint (_checkpoint folder) rastreando quais arquivos foram processados. Delta Lake garante ACID, então mesmo se um job falhar mid-stream, o rollback é automático. Combinação: checkpoint + Delta ACID = exactly-once.",
+    "tip": "Exactly-once = checkpoint + Delta ACID. Auto Loader + Delta = default.",
+    "officialReference": {
+      "title": "Auto Loader",
+      "url": "https://docs.databricks.com/en/ingestion/auto-loader/index.html"
+    },
+    "contextScenario": "Garantindo qualidade de dados em ingestão"
+  },
+  {
+    "id": 13,
+    "category": "Data Processing & Transformations",
+    "difficulty": "foundational",
+    "questionType": "conceptual",
+    "question": "Qual é o principal benefício de usar Delta Lake vs Parquet puro?",
+    "options": {
+      "A": "Delta oferece compressão melhor que Parquet",
+      "B": "Delta oferece ACID compliance, versionamento (Time Travel) e schema enforcement",
+      "C": "Delta é mais rápido para leitura em todos os casos",
+      "D": "Delta suporta mais tipos de dados"
+    },
+    "correctAnswer": "B",
+    "rationale": "Delta Lake adiciona uma camada de transação sobre Parquet: ACID guarantees (atomicidade, consistência, isolamento, durabilidade), Time Travel (veja versões anteriores), schema enforcement, e audit logs. Parquet puro não oferece nenhuma dessas garantias.",
+    "tip": "Delta = Parquet + ACID + Time Travel + Schema. Não é apenas formato.",
+    "officialReference": {
+      "title": "Delta Lake Documentation",
+      "url": "https://docs.databricks.com/en/delta/index.html"
+    },
+    "contextScenario": "Escolhendo formato de storage"
+  },
+  {
+    "id": 14,
+    "category": "Data Processing & Transformations",
+    "difficulty": "intermediate",
+    "questionType": "code_interpretation",
+    "question": "Qual é o efeito deste código?\n```python\ndf1 = spark.read.format(\"delta\").load(\"/data/bronze\")\ndf2 = df1.filter(col(\"status\") == \"active\")\ndf3 = df2.groupBy(\"category\").count()\ndf3.write.format(\"delta\").mode(\"overwrite\").save(\"/data/silver\")\n```\n",
+    "options": {
+      "A": "Cada ação (filter, groupBy, write) é executada imediatamente",
+      "B": "Nenhuma ação é executada até o write, quando todo o plano é otimizado",
+      "C": "Cria 3 jobs separados em paralelo",
+      "D": "Fail because groupBy().count() needs a cache"
+    },
+    "correctAnswer": "B",
+    "rationale": "Spark é lazy: filter e groupBy criam DAGs mas não executam. Apenas write force action, quando Spark otimiza todo o plano (Catalyst optimizer), funde operações, e executa. Isso é eficiente: elimina operações desnecessárias antes de computar.",
+    "tip": "Spark lazy evaluation = ações (write, collect, show) triggerem execução.",
+    "officialReference": {
+      "title": "Spark SQL API",
+      "url": "https://docs.databricks.com/en/sql/language-manual/index.html"
+    },
+    "contextScenario": "Otimizando query performance em Spark"
+  },
+  {
+    "id": 15,
+    "category": "Data Processing & Transformations",
+    "difficulty": "advanced",
+    "questionType": "troubleshooting",
+    "question": "Um groupBy().count() em 500GB de dados está causando Out of Memory. Quais são as soluções?",
+    "options": {
+      "A": "Apenas aumentar número de workers",
+      "B": "Repartir dados com mais partições e usar shuffle partition configuration",
+      "C": "Converter para Pandas e usar local grouping",
+      "D": "Abandonar groupBy e usar window functions"
+    },
+    "correctAnswer": "B",
+    "rationale": "GroupBy envolve shuffle, que pode sobrecarregar memória se partições forem desbalanceadas. Soluções: (1) Aumentar partições com df.repartition(n), (2) Tunar spark.sql.shuffle.partitions (default 200, pode aumentar para 1000+), (3) Usar broadcast se uma tabela for pequena. Window functions não resolvem (também fazem shuffle).",
+    "tip": "GroupBy OOM = shuffle overload. Ajuste repartition e shuffle.partitions.",
+    "officialReference": {
+      "title": "Spark SQL API",
+      "url": "https://docs.databricks.com/en/sql/language-manual/index.html"
+    },
+    "contextScenario": "Performance tuning em transformações complexas"
+  },
+  {
+    "id": 16,
+    "category": "Data Processing & Transformations",
+    "difficulty": "intermediate",
+    "questionType": "code_interpretation",
+    "question": "O que faz este código?\n```python\nfrom pyspark.sql.window import Window\nw = Window.partitionBy(\"department\").orderBy(\"salary\")\nresult = df.withColumn(\"salary_rank\", \n    row_number().over(w))\n```\n",
+    "options": {
+      "A": "Classifica salários globalmente de 1 a n",
+      "B": "Classifica salários dentro de cada departamento, resetando a 1 para cada novo dept",
+      "C": "Ordena pelos salários em ordem decrescente",
+      "D": "Cria uma nova coluna de hash"
+    },
+    "correctAnswer": "B",
+    "rationale": "Window.partitionBy(dept).orderBy(salary) + row_number() cria rank dentro de cada partição. Resultado: cada departamento tem ranking próprio começando de 1. Se Sales tem 50 pessoas, cada uma tem rank 1-50. HR tem outra sequência 1-n.",
+    "tip": "window.partitionBy = reset por grupo. row_number().over(w) = rank dentro do grupo.",
+    "officialReference": {
+      "title": "Spark SQL API",
+      "url": "https://docs.databricks.com/en/sql/language-manual/index.html"
+    },
+    "contextScenario": "Analytics avançado com window functions"
+  },
+  {
+    "id": 17,
+    "category": "Data Processing & Transformations",
+    "difficulty": "advanced",
+    "questionType": "architecture",
+    "question": "Explique as camadas Medallion (Bronze, Silver, Gold) e seus propósitos.",
+    "options": {
+      "A": "Bronze=raw, Silver=cleaned, Gold=aggregated for consumption",
+      "B": "Bronze=archived, Silver=current, Gold=deleted",
+      "C": "Bronze=test, Silver=staging, Gold=production",
+      "D": "Apenas nomes sem propósito técnico real"
+    },
+    "correctAnswer": "A",
+    "rationale": "Medallion: Bronze = dados brutos conforme ingeridos (full history), Silver = dados limpos/validados/dedupados (single source of truth), Gold = dados agregados/transformados para consumo BI/aplicações (ready-to-use). Cada camada pode reter histórico em Delta com Time Travel.",
+    "tip": "Bronze→Silver→Gold = raw→clean→aggregate. Padrão de Lakehouse.",
+    "officialReference": {
+      "title": "Delta Lake Documentation",
+      "url": "https://docs.databricks.com/en/delta/index.html"
+    },
+    "contextScenario": "Desenhando data pipeline arquitetura"
+  },
+  {
+    "id": 18,
+    "category": "Data Processing & Transformations",
+    "difficulty": "intermediate",
+    "questionType": "conceptual",
+    "question": "Como usar Time Travel em Delta para recuperar dados de uma versão anterior?",
+    "options": {
+      "A": "Usar RESTORE TABLE para reverter table state",
+      "B": "Usar VERSION AS OF ou TIMESTAMP AS OF em query de read",
+      "C": "Reimportar dados de backup manual",
+      "D": "Time Travel só funciona com snapshots"
+    },
+    "correctAnswer": "B",
+    "rationale": "Delta mantém histórico de versões. Recuperar dados: SELECT * FROM table VERSION AS OF 10 (versão 10) ou SELECT * FROM table TIMESTAMP AS OF '2025-01-16'. Alternativa RESTORE TABLE database.table TO VERSION 10 reverte estado atual.",
+    "tip": "Time Travel = VERSION AS OF ou TIMESTAMP AS OF. Delta default.",
+    "officialReference": {
+      "title": "Delta Lake Documentation",
+      "url": "https://docs.databricks.com/en/delta/index.html"
+    },
+    "contextScenario": "Data recovery e debugging"
+  },
+  {
+    "id": 19,
+    "category": "Data Governance & Quality",
+    "difficulty": "intermediate",
+    "questionType": "conceptual",
+    "question": "Como Unity Catalog implementa column-level security?",
+    "options": {
+      "A": "Usando políticas de coluna que definem quem pode ler específicas colunas",
+      "B": "Cifrando apenas colunas sensíveis",
+      "C": "Criando views separadas para cada usuário",
+      "D": "Automaticamente escondendo dados PII"
+    },
+    "correctAnswer": "A",
+    "rationale": "Unity Catalog suporta column-level access policies. Admin define policies como 'usuários do dept X podem ler coluna salary' e o UC automaticamente filtra colunas em queries. Mais granular que row-level ou table-level.",
+    "tip": "UC column security = policies que auto-filtram colunas por usuário.",
+    "officialReference": {
+      "title": "Unity Catalog - Data Governance",
+      "url": "https://docs.databricks.com/en/data-governance/unity-catalog/index.html"
+    },
+    "contextScenario": "Implementando data security policies"
+  },
+  {
+    "id": 20,
+    "category": "Data Governance & Quality",
+    "difficulty": "intermediate",
+    "questionType": "troubleshooting",
+    "question": "Detectou-se que 15% das linhas em uma tabela de clientes têm email NULL. Qual é a melhor abordagem?",
+    "options": {
+      "A": "Deletar todas as linhas com NULL",
+      "B": "Implementar constraints (NOT NULL) no schema e rejeitar inserts",
+      "C": "Implementar data quality check com DLT expectations ou Data Quality Monitoring",
+      "D": "Ignorar e continuar processando"
+    },
+    "correctAnswer": "C",
+    "rationale": "Data quality checks (DLT expectations com .expect() ou .expect_or_fail()) validam dados antes de chegarem a consumer layers. Isso permite: alertar, registrar issues, e decidir se rejeita inserts ou avisa. Melhor que deletar (perde dados) ou constraints rígidas (quebra pipelines).",
+    "tip": "Data quality = use DLT expectations. Valida sem quebrar pipelines.",
+    "officialReference": {
+      "title": "Delta Live Tables",
+      "url": "https://docs.databricks.com/en/delta-live-tables/index.html"
+    },
+    "contextScenario": "Garantindo quality em data pipelines"
+  },
+  {
+    "id": 21,
+    "category": "Data Governance & Quality",
+    "difficulty": "foundational",
+    "questionType": "conceptual",
+    "question": "Qual é o propósito de Data Lineage em UC?",
+    "options": {
+      "A": "Rastrear quem leu/escreveu quais dados e quais transformações levaram a qual resultado",
+      "B": "Apenas contar quantas queries foram executadas",
+      "C": "Agendar backups automáticos",
+      "D": "Criptografar dados em trânsito"
+    },
+    "correctAnswer": "A",
+    "rationale": "Data Lineage em UC rastreia: (1) quem acessou dados, (2) quais transformações foram aplicadas, (3) qual é a origem de cada coluna em relatório final. Crítico para auditoria, compliance, e debug de data quality issues.",
+    "tip": "Lineage = onde os dados vieram e quem os tocou. Auditoria + debugging.",
+    "officialReference": {
+      "title": "Unity Catalog - Data Governance",
+      "url": "https://docs.databricks.com/en/data-governance/unity-catalog/index.html"
+    },
+    "contextScenario": "Compliance e auditoria de dados"
+  },
+  {
+    "id": 22,
+    "category": "Productionizing Data Pipelines",
+    "difficulty": "foundational",
+    "questionType": "conceptual",
+    "question": "Qual é a melhor forma de agendar um notebook para rodar diariamente em produção?",
+    "options": {
+      "A": "Usar Databricks Jobs API para criar job com schedule",
+      "B": "Deixar o notebook aberto em um cluster permanente",
+      "C": "Usar cron scripts locais para chamar Databricks",
+      "D": "Roda manualmente todos os dias"
+    },
+    "correctAnswer": "A",
+    "rationale": "Jobs API fornece: scheduling (cron expressions), retry logic, notifications, versioning. Job é versioned, isolado em clusters temporários (cost-effective), e integrado com UC/monitoring. Cron local é frágil; notebooks abertos 24/7 é caro.",
+    "tip": "Production = use Jobs API. Scheduler nativo, retry, notifications.",
+    "officialReference": {
+      "title": "Databricks Jobs API",
+      "url": "https://docs.databricks.com/en/workflows/jobs/index.html"
+    },
+    "contextScenario": "Orquestração de data pipelines em produção"
+  },
+  {
+    "id": 23,
+    "category": "Productionizing Data Pipelines",
+    "difficulty": "advanced",
+    "questionType": "troubleshooting",
+    "question": "Um job que roda às 8am falhava hoje mas succeeded ontem. Como debugar?",
+    "options": {
+      "A": "Verificar logs da run no Jobs UI, checar inputs do dia (diferentes?), validar dependências upstream",
+      "B": "Rerun job sem mudanças",
+      "C": "Aumentar timeout e restartar job",
+      "D": "Backup de cluster e rerun"
+    },
+    "correctAnswer": "A",
+    "rationale": "Debug metodológico: (1) Logs no Jobs UI detalham erro, (2) Comparar inputs de hoje vs ontem (dados podem ser diferentes), (3) Checar se jobs upstream falharam (dados não chegaram), (4) Rerun com novo cluster. Aumentar timeout sem debug não resolve.",
+    "tip": "Job failure debug = logs + inputs + dependencies. Sistemático.",
+    "officialReference": {
+      "title": "Databricks Jobs API",
+      "url": "https://docs.databricks.com/en/workflows/jobs/index.html"
+    },
+    "contextScenario": "Troubleshooting pipelines em produção"
+  },
+  {
+    "id": 24,
+    "category": "Productionizing Data Pipelines",
+    "difficulty": "intermediate",
+    "questionType": "conceptual",
+    "question": "Como alertar quando uma tabela não recebe dados por mais de 24h?",
+    "options": {
+      "A": "Criar job que checa timestamp do último insert e envia alert via email/Slack",
+      "B": "Monitorar CPU do cluster manualmente",
+      "C": "Usar Databricks SQL Alerts com query condition",
+      "D": "Apenas contar rows periodicamente"
+    },
+    "correctAnswer": "C",
+    "rationale": "Databricks SQL Alerts permite criar alertas com SQL queries. Ex: SELECT MAX(last_modified) FROM table, se resultado > 24h, trigger alert. Mais nativo que job custom. Alternativa: usar Workflows com email action.",
+    "tip": "Alerting = SQL Alerts ou Workflows com notifications.",
+    "officialReference": {
+      "title": "Databricks Workflows",
+      "url": "https://docs.databricks.com/en/workflows/index.html"
+    },
+    "contextScenario": "Monitoring data pipelines em produção"
+  },
+  {
+    "id": 25,
+    "category": "Data Processing & Transformations",
+    "difficulty": "advanced",
+    "questionType": "code_interpretation",
+    "question": "Qual destas queries será mais eficiente em uma tabela particionada por 'date'?\n```\n-- Query 1:\nSELECT * FROM events WHERE YEAR(date) = 2025\n\n-- Query 2:\nSELECT * FROM events WHERE date >= '2025-01-01' AND date <= '2025-12-31'\n```\n",
+    "options": {
+      "A": "Query 1 é mais eficiente (usa função)",
+      "B": "Query 2 é mais eficiente (Spark pode fazer partition pruning)",
+      "C": "Ambas são equivalentes em performance",
+      "D": "Nenhuma usa partitions"
+    },
+    "correctAnswer": "B",
+    "rationale": "Spark faz partition pruning (pula partições não-matching). Query 2 com range simples permite pruning. Query 1 com YEAR() função requer aplicar função a toda coluna, impedindo pruning. Regra: comparações diretas > funções para partitions.",
+    "tip": "Partition pruning = expressões simples (x > Y), não funções (YEAR(x)).",
+    "officialReference": {
+      "title": "Spark SQL API",
+      "url": "https://docs.databricks.com/en/sql/language-manual/index.html"
+    },
+    "contextScenario": "Query optimization em dados large-scale"
+  },
+  {
+    "id": 26,
+    "category": "Data Processing & Transformations",
+    "difficulty": "intermediate",
+    "questionType": "code_interpretation",
+    "question": "O que retorna este código?\n```python\nfrom pyspark.sql.functions import coalesce, col\ndf = spark.createDataFrame([(None, \"b\"), (\"a\", None)], [\"x\", \"y\"])\nresult = df.select(coalesce(col(\"x\"), col(\"y\"), lit(\"default\")))\nresult.show()\n```\n",
+    "options": {
+      "A": "['b', 'a']",
+      "B": "[None, None]",
+      "C": "['default', 'default']",
+      "D": "['b', 'a']"
+    },
+    "correctAnswer": "D",
+    "rationale": "coalesce() retorna o primeiro valor não-NULL. Linha 1: x=NULL, y='b' → retorna 'b'. Linha 2: x='a', y=NULL → retorna 'a'. Default só usaria se ambos fossem NULL.",
+    "tip": "coalesce = first non-NULL. Ordem importa.",
+    "officialReference": {
+      "title": "PySpark API Reference",
+      "url": "https://spark.apache.org/docs/latest/api/python/"
+    },
+    "contextScenario": "Null handling em transformações"
+  },
+  {
+    "id": 27,
+    "category": "Data Processing & Transformations",
+    "difficulty": "advanced",
+    "questionType": "architecture",
+    "question": "Está fazendo um join entre uma tabela grande (100GB) e uma pequena (50MB). Como otimizar?",
+    "options": {
+      "A": "Usar BROADCAST(tabela_pequena) para broadcast join, evitando shuffle",
+      "B": "Sempre fazer shuffle join",
+      "C": "Usar nested loop join",
+      "D": "Repartir tabela grande em 1000 partições"
+    },
+    "correctAnswer": "A",
+    "rationale": "Broadcast join copia a tabela pequena (<50MB típico) para todo worker, evitando shuffle custoso. Sintaxe: df_large.join(broadcast(df_small), ...). Sem broadcast, Spark faria shuffle de ambas (custoso). Com broadcast: shuffle = 0.",
+    "tip": "Join otimization: pequena < 50MB? Broadcast.",
+    "officialReference": {
+      "title": "Spark SQL API",
+      "url": "https://docs.databricks.com/en/sql/language-manual/index.html"
+    },
+    "contextScenario": "Query optimization em joins complexos"
+  }
+]

@@ -5,18 +5,9 @@ import { useLocation } from "wouter";
 import { Clock, Settings, Check } from "lucide-react";
 import { useQuizHistory } from "@/hooks/useQuizHistory";
 import { shuffleArray } from "@/lib/utils";
+import { loadQuestions, type Question as LoadedQuestion } from "@/lib/questionsLoader";
 
-interface Question {
-  id: number;
-  question: string;
-  options: { A: string; B: string; C: string; D: string };
-  correctAnswer: string;
-  category: string;
-  difficulty: string;
-  rationale: string;
-  tip: string;
-  officialReference: { title: string; url: string };
-}
+type Question = LoadedQuestion;
 
 interface Answer {
   questionId: number;
@@ -52,18 +43,17 @@ export default function PracticeMode() {
 
   // Carregar questões
   useEffect(() => {
-    const loadQuestions = async () => {
+    const loadQuestionsData = async () => {
       try {
-        const response = await fetch("/questions_expanded.json");
-        const loadedQuestions = await response.json();
-        setAllQuestions(loadedQuestions);
-        setLoading(false);
+        const loaded = await loadQuestions();
+        setAllQuestions(loaded);
       } catch (error) {
         console.error("Erro ao carregar questões:", error);
+      } finally {
         setLoading(false);
       }
     };
-    loadQuestions();
+    loadQuestionsData();
   }, []);
 
   // Iniciar prática
@@ -435,14 +425,16 @@ export default function PracticeMode() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold mb-2">Referência Oficial:</p>
-                        <a
-                          href={current.officialReference.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline"
-                        >
-                          📚 {current.officialReference.title}
-                        </a>
+                        {current.officialReference && (
+                          <a
+                            href={current.officialReference.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            📚 {current.officialReference.title}
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
