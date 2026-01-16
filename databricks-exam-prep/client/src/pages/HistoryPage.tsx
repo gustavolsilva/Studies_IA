@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Trash2, ChevronRight, BarChart3, Calendar, Clock, Target } from 'lucide-react';
 import { Link } from 'wouter';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { PerformanceChart } from '@/components/PerformanceChart';
+import { CategoryPerformanceChart } from '@/components/CategoryPerformanceChart';
 
 export default function HistoryPage() {
   const { history, loading, deleteAttempt, clearHistory } = useQuizHistory();
@@ -44,10 +46,25 @@ export default function HistoryPage() {
   })) : [];
 
   const timelineData = history.attempts.slice().reverse().map((attempt, idx) => ({
-    index: idx + 1,
-    taxa: Math.round((attempt.correctAnswers / attempt.totalQuestions) * 100),
+    simuladoNumber: idx + 1,
+    taxaAcerto: Math.round((attempt.correctAnswers / attempt.totalQuestions) * 100),
+    questoesRespondidas: attempt.totalQuestions,
+    acertos: attempt.correctAnswers,
     data: new Date(attempt.startTime).toLocaleDateString('pt-BR'),
   }));
+
+  // Dados por categoria ao longo do tempo
+  const categoryTimelineData = history.attempts.slice().reverse().map((attempt, idx) => {
+    const categoryData: any = { simuladoNumber: idx + 1 };
+    Object.entries(attempt.categoryStats).forEach(([cat, stat]) => {
+      categoryData[cat] = Math.round((stat.correct / stat.total) * 100);
+    });
+    return categoryData;
+  });
+
+  const categories = categoryTimelineData.length > 0 
+    ? Object.keys(categoryTimelineData[0]).filter(key => key !== 'simuladoNumber')
+    : [];
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -115,35 +132,44 @@ export default function HistoryPage() {
 
         {/* Gráficos */}
         {history.totalAttempts > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Gráfico de Desempenho por Categoria */}
-            {categoryStats.length > 0 && (
-              <Card className="bg-card p-6 border-border">
-                <h2 className="text-xl font-bold mb-4">Desempenho por Categoria</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={categoryStats}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="taxa" fill="#FF3621" name="Taxa de Acerto (%)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
+          <div className="space-y-8 mb-8">
+            {/* Gráfico de Taxa de Acerto ao Longo do Tempo */}
+            {timelineData.length > 0 && (
+              <PerformanceChart 
+                data={timelineData} 
+                title="📈 Evolução da Taxa de Acerto"
+              />
             )}
 
-            {/* Gráfico de Progresso ao Longo do Tempo */}
-            {timelineData.length > 0 && (
+            {/* Gráfico de Desempenho por Categoria ao Longo do Tempo */}
+            {categoryTimelineData.length > 0 && categories.length > 0 && (
+              <CategoryPerformanceChart 
+                data={categoryTimelineData} 
+                categories={categories}
+                title="📊 Desempenho por Categoria ao Longo do Tempo"
+              />
+            )}
+
+            {/* Gráfico de Desempenho Geral por Categoria */}
+            {categoryStats.length > 0 && (
               <Card className="bg-card p-6 border-border">
-                <h2 className="text-xl font-bold mb-4">Progresso ao Longo do Tempo</h2>
+                <h2 className="text-xl font-bold mb-4">📋 Desempenho Geral por Categoria</h2>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={timelineData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="index" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="taxa" stroke="#FF3621" name="Taxa de Acerto (%)" />
-                  </LineChart>
+                  <BarChart data={categoryStats}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} stroke="var(--muted-foreground)" />
+                    <YAxis stroke="var(--muted-foreground)" domain={[0, 100]} />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        color: 'var(--foreground)'
+                      }}
+                      formatter={(value) => `${value}%`}
+                    />
+                    <Bar dataKey="taxa" fill="var(--primary)" name="Taxa de Acerto (%)" />
+                  </BarChart>
                 </ResponsiveContainer>
               </Card>
             )}
