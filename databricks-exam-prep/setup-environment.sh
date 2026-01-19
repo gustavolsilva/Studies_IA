@@ -82,8 +82,8 @@ log_info "Gerando banco de questões em Parquet..."
 
 mkdir -p "$PUBLIC_DIR"
 
-if [ -f "$PROJECT_ROOT/generate_questions_parquet.py" ]; then
-    python3 "$PROJECT_ROOT/generate_questions_parquet.py"
+if [ -f "$PROJECT_ROOT/tools/generate_questions_parquet.py" ]; then
+    python3 "$PROJECT_ROOT/tools/generate_questions_parquet.py"
     
     if [ -f "$PUBLIC_DIR/questions_enhanced.parquet" ] || [ -f "$PUBLIC_DIR/questions_enhanced.json" ]; then
         log_success "Banco de questões gerado com sucesso"
@@ -92,7 +92,7 @@ if [ -f "$PROJECT_ROOT/generate_questions_parquet.py" ]; then
         exit 1
     fi
 else
-    log_error "Script generate_questions_parquet.py não encontrado"
+    log_error "Script generate_questions_parquet.py não encontrado em tools/"
     exit 1
 fi
 
@@ -134,10 +134,10 @@ log_success "TypeScript validado"
 if command -v docker &> /dev/null; then
     log_info "Docker detectado. Compilando imagens..."
     
-    docker build -t databricks-exam-prep:latest . 2>&1 | tail -5
+    docker build -t databricks-exam-prep:latest -f "$PROJECT_ROOT/docker/Dockerfile" "$PROJECT_ROOT" 2>&1 | tail -5
     log_success "Imagem Docker compilada"
     
-    log_success "Para rodar em Docker: docker-compose up"
+    log_success "Para rodar em Docker: docker-compose -f docker/docker-compose.yml up"
 else
     log_warning "Docker não detectado. Pulando setup Docker..."
     log_info "Para usar Docker, instale de: https://www.docker.com/products/docker-desktop"

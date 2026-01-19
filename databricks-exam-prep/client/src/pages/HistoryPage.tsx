@@ -256,6 +256,11 @@ export default function HistoryPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <span className="text-sm font-semibold text-primary">{modeLabel}</span>
+                          {attempt.earlyExit && (
+                            <span className="px-2 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold rounded-full border border-orange-500/20">
+                              Encerrado
+                            </span>
+                          )}
                           <span className="text-sm text-muted-foreground">
                             {new Date(attempt.startTime).toLocaleDateString('pt-BR')}
                           </span>

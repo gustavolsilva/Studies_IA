@@ -104,3 +104,8 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Virtual environment
+.venv/
+env/
+venv/

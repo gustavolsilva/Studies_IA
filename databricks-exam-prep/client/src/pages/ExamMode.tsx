@@ -3,9 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Clock, AlertCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useQuizHistory } from "@/hooks/useQuizHistory";
 import { shuffleArray } from "@/lib/utils";
-import { loadQuestions, type Question } from "@/lib/questionsLoader";
+import { loadQuestions, shuffleQuestionOptions, type Question } from "@/lib/questionsLoader";
 
 interface Answer {
   questionId: number;
@@ -26,15 +37,16 @@ export default function ExamMode() {
   const [loading, setLoading] = useState(true);
   const startTimeRef = useRef<number>(Date.now());
   const savedRef = useRef<boolean>(false);
+  const questionTopRef = useRef<HTMLDivElement | null>(null);
+  const [showExitDialog, setShowExitDialog] = useState(false);
 
   // Carregar todas as questões uma vez
   useEffect(() => {
     const loadQuestionsData = async () => {
       try {
         const loaded = await loadQuestions();
+        // Mantemos o banco em memória e embaralhamos as opções a cada seleção de prova
         setAllQuestions(loaded);
-        const shuffled = shuffleArray(loaded);
-        setQuestions(shuffled.slice(0, 45));
       } catch (error) {
         console.error("Erro ao carregar questões:", error);
       } finally {
@@ -95,14 +107,14 @@ export default function ExamMode() {
         (q) => q.category === category && !usedQuestionIds.has(q.id)
       );
 
-      // Embaralhar questões da categoria
-      const shuffled = shuffleArray(categoryQuestions);
+      // Embaralhar questões e opções dentro da categoria
+      const shuffledCategory = shuffleArray(categoryQuestions).map(shuffleQuestionOptions);
 
       // Pegar apenas o número necessário
-      const toTake = Math.min(targetCount, shuffled.length);
+      const toTake = Math.min(targetCount, shuffledCategory.length);
       for (let i = 0; i < toTake; i++) {
-        selected.push(shuffled[i]);
-        usedQuestionIds.add(shuffled[i].id);
+        selected.push(shuffledCategory[i]);
+        usedQuestionIds.add(shuffledCategory[i].id);
       }
     });
 
@@ -111,10 +123,10 @@ export default function ExamMode() {
       const remaining = allQuestions.filter(
         (q) => !usedQuestionIds.has(q.id)
       );
-      const shuffled = shuffleArray(remaining);
+      const shuffledRemaining = shuffleArray(remaining).map(shuffleQuestionOptions);
       const needed = count - selected.length;
-      for (let i = 0; i < needed && i < shuffled.length; i++) {
-        selected.push(shuffled[i]);
+      for (let i = 0; i < needed && i < shuffledRemaining.length; i++) {
+        selected.push(shuffledRemaining[i]);
       }
     }
 
@@ -123,6 +135,14 @@ export default function ExamMode() {
   };
 
   // Temporizador
+  useEffect(() => {
+    if (questionTopRef.current) {
+      questionTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentIndex]);
+
   useEffect(() => {
     if (showResults || loading) return;
     
@@ -191,7 +211,17 @@ export default function ExamMode() {
     saveExamAttempt();
   };
 
-  const saveExamAttempt = () => {
+  const handleEarlyExit = () => {
+    if (answers.length === 0) {
+      setLocation('/mode-selection');
+      return;
+    }
+    
+    setShowResults(true);
+    saveExamAttempt(true); // true = encerramento antecipado
+  };
+
+  const saveExamAttempt = (earlyExit = false) => {
     if (savedRef.current || answers.length === 0) return;
     savedRef.current = true;
 
@@ -226,6 +256,7 @@ export default function ExamMode() {
       timeSpent,
       categoryStats,
       difficultyStats,
+      earlyExit,
       answers: answers.map((a) => {
         const q = questions.find((q) => q.id === a.questionId)!;
         return {
@@ -383,19 +414,16 @@ export default function ExamMode() {
   const timeWarning = timeLeft < 300; // Menos de 5 minutos
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header com Temporizador */}
-      <header className="border-b border-border bg-card sticky top-0 z-10">
-        <div className="container py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Compact Header com Temporizador */}
+      <header className="border-b border-border bg-card sticky top-0 z-10 flex-shrink-0">
+        <div className="container px-4 md:px-6 py-2 md:py-3 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-primary">Modo Prova Oficial</h1>
-            <p className="text-sm text-muted-foreground">
-              Questão {currentIndex + 1} de {questions.length}
-            </p>
+            <h1 className="text-sm md:text-lg font-bold text-primary">Questão {currentIndex + 1}/{questions.length}</h1>
           </div>
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${timeWarning ? "bg-red-500/10" : "bg-primary/10"}`}>
-            <Clock className={`w-5 h-5 ${timeWarning ? "text-red-500" : "text-primary"}`} />
-            <span className={`font-bold text-lg ${timeWarning ? "text-red-500" : "text-primary"}`}>
+          <div className={`flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-sm md:text-base ${timeWarning ? "bg-red-500/10" : "bg-primary/10"}`}>
+            <Clock className={`w-4 h-4 md:w-5 md:h-5 ${timeWarning ? "text-red-500" : "text-primary"}`} />
+            <span className={`font-bold ${timeWarning ? "text-red-500" : "text-primary"}`}>
               {formatTime(timeLeft)}
             </span>
           </div>
@@ -404,104 +432,148 @@ export default function ExamMode() {
 
       {/* Aviso de Tempo */}
       {timeWarning && (
-        <div className="bg-red-500/10 border-b border-red-500/20 px-4 py-3 flex items-center gap-2 text-red-600">
-          <AlertCircle className="w-5 h-5" />
-          <span className="font-semibold">Tempo está acabando! Menos de 5 minutos restantes.</span>
+        <div className="bg-red-500/10 border-b border-red-500/20 px-4 py-2 flex items-center gap-2 text-red-600 text-sm flex-shrink-0">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span className="font-semibold">Tempo está acabando!</span>
         </div>
       )}
 
-      {/* Conteúdo */}
-      <main className="container py-8">
-        <div className="max-w-3xl mx-auto">
-          {/* Barra de Progresso */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-semibold">Progresso</span>
-              <span className="text-sm text-muted-foreground">
-                {answers.length} de {questions.length} respondidas
-              </span>
-            </div>
-            <div className="w-full bg-border rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${(answers.length / questions.length) * 100}%` }}
-              ></div>
-            </div>
+      {/* Conteúdo Principal - Responsivo */}
+      <main className="flex-1 overflow-hidden flex flex-col container px-3 md:px-6 py-3 md:py-6">
+        {/* Barra de Progresso Compacta */}
+        <div className="mb-3 md:mb-4 flex-shrink-0">
+          <div className="flex justify-between items-center mb-1.5 md:mb-2 text-xs md:text-sm">
+            <span className="font-semibold">Progresso</span>
+            <span className="text-muted-foreground">
+              {answers.length}/{questions.length}
+            </span>
           </div>
+          <div className="w-full bg-border rounded-full h-1.5">
+            <div
+              className="bg-primary h-1.5 rounded-full transition-all"
+              style={{ width: `${(answers.length / questions.length) * 100}%` }}
+            ></div>
+          </div>
+        </div>
 
-          {/* Questão */}
-          <Card className="p-8 mb-8">
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">
+        {/* Questão - Scrollable */}
+        <div ref={questionTopRef} tabIndex={-1} className="h-0 scroll-mt-8"></div>
+        <div className="flex-1 overflow-y-auto pr-2">
+          <Card className="p-4 md:p-6 mb-4">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                   {current.category}
                 </span>
-                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                   {current.difficulty === "advanced" ? "Avançado" : "Intermediário"}
                 </span>
               </div>
-              <h2 className="text-xl font-bold">{current.question}</h2>
+              <h2 className="text-base md:text-lg font-bold leading-tight">{current.question}</h2>
             </div>
 
-            {/* Opções */}
-            <div className="space-y-3">
+            {/* Opções - Compactas */}
+            <div className="space-y-2">
               {["A", "B", "C", "D"].map((option) => (
                 <button
                   key={option}
                   onClick={() => handleSelectAnswer(option)}
-                  className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
+                  className={`w-full p-3 text-left rounded-lg border-2 transition-all text-sm md:text-base ${
                     selectedAnswer === option
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-2 md:gap-3">
                     <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      className={`w-5 h-5 md:w-6 md:h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         selectedAnswer === option
                           ? "border-primary bg-primary text-white"
                           : "border-border"
                       }`}
                     >
-                      {selectedAnswer === option && <span className="text-sm font-bold">✓</span>}
+                      {selectedAnswer === option && <span className="text-xs md:text-sm font-bold">✓</span>}
                     </div>
-                    <div>
-                      <p className="font-semibold">{option}.</p>
-                      <p className="text-sm text-muted-foreground">{current.options[option as keyof typeof current.options]}</p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-xs md:text-sm">{option}.</p>
+                      <p className="text-xs md:text-sm text-muted-foreground break-words">{current.options[option as keyof typeof current.options]}</p>
                     </div>
                   </div>
                 </button>
               ))}
             </div>
           </Card>
+        </div>
 
-          {/* Botões de Navegação */}
-          <div className="flex gap-4">
+        {/* Botões de Navegação - Fixed Bottom */}
+        <div className="flex gap-2 pt-3 md:pt-4 border-t border-border flex-shrink-0">
+          <Button
+            onClick={handlePrevious}
+            variant="outline"
+            disabled={currentIndex === 0}
+            className="flex-1 text-xs md:text-sm px-2 md:px-4"
+          >
+            Anterior
+          </Button>
+          {currentIndex === questions.length - 1 ? (
             <Button
-              onClick={handlePrevious}
-              variant="outline"
-              disabled={currentIndex === 0}
-              className="flex-1"
+              onClick={handleFinish}
+              disabled={!selectedAnswer}
+              className="flex-1 text-xs md:text-sm px-2 md:px-4"
             >
-              ← Anterior
+              Finalizar
             </Button>
+          ) : (
             <Button
               onClick={handleNext}
               disabled={!selectedAnswer}
-              className="flex-1 bg-primary hover:bg-primary/90"
+              className="flex-1 text-xs md:text-sm px-2 md:px-4"
             >
-              Próxima →
+              Próxima
             </Button>
-            {currentIndex === questions.length - 1 && (
+          )}
+        </div>
+        
+        {/* Botão de Encerrar */}
+        <div className="mt-2 pt-2 border-t border-border flex-shrink-0">
+          <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+            <AlertDialogTrigger asChild>
               <Button
-                onClick={handleFinish}
-                disabled={!selectedAnswer}
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                variant="outline"
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 text-xs md:text-sm"
               >
-                Finalizar Prova
+                Encerrar Prova
               </Button>
-            )}
-          </div>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Encerrar Prova Antecipadamente?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Você respondeu {answers.length} de {questions.length} questões.
+                  {answers.length > 0 ? (
+                    <>
+                      <br /><br />
+                      Seu progresso será salvo e você verá os resultados.
+                    </>
+                  ) : (
+                    <>
+                      <br /><br />
+                      Nenhuma resposta foi registrada.
+                    </>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Continuar Prova</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleEarlyExit}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  Encerrar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </main>
     </div>
