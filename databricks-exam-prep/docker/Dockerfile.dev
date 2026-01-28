@@ -16,7 +16,7 @@ RUN npm ci --no-optional
 COPY . .
 
 # Gerar banco de perguntas antes de dev
-RUN python3 generate_questions_enhanced.py || true
+RUN python3 tools/generate_questions_enhanced.py || true
 
 EXPOSE 3000
 

@@ -63,7 +63,14 @@ export default function HistoryDetailsPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar ao Histórico
           </Button>
-          <h1 className="text-4xl font-bold text-primary mb-2">Detalhes do Simulado</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl font-bold text-primary">Detalhes do Simulado</h1>
+            {attempt.earlyExit && (
+              <span className="px-3 py-1 bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm font-semibold rounded-full border border-orange-500/20">
+                Encerrado Antecipadamente
+              </span>
+            )}
+          </div>
           <p className="text-muted-foreground">{modeLabel}</p>
         </div>
 

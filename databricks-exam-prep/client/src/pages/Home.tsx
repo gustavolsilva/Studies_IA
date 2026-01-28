@@ -8,9 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, Loader2, Menu, Clock, BookOpen, Zap, Target } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useEffect, useRef, useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const [showExitDialog, setShowExitDialog] = useState(false);
   const {
     questions,
     currentQuestion,
@@ -263,6 +276,15 @@ export default function Home() {
   const stats = getStats();
   const currentUserAnswer = userAnswers[currentQuestionIndex];
 
+  const questionTopRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (questionTopRef.current) {
+      questionTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentQuestionIndex]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Databricks Brand */}
@@ -310,6 +332,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Question Section */}
           <div className="lg:col-span-2">
+            <div ref={questionTopRef} tabIndex={-1} className="h-0 scroll-mt-24"></div>
             <QuestionCard
               question={currentQuestion}
               userAnswer={currentUserAnswer}
@@ -337,6 +360,39 @@ export default function Home() {
                 Próxima
                 <ChevronRight className="w-4 h-4" />
               </Button>
+            </div>
+
+            {/* Botão Encerrar */}
+            <div className="mt-4 pt-4 border-t border-border">
+              <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    Encerrar Estudo
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Encerrar Modo Livre?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Você está na questão {currentQuestionIndex + 1} de {questions.length}.
+                      <br /><br />
+                      Tem certeza que deseja voltar ao menu principal?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Continuar Estudando</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => setLocation('/mode-selection')}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      Voltar ao Menu
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
 

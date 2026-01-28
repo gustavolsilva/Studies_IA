@@ -16,7 +16,7 @@ RUN npm ci
 COPY . .
 
 # Gerar banco de perguntas em Parquet
-RUN python3 generate_questions_enhanced.py
+RUN python3 tools/generate_questions_enhanced.py
 
 # Build da aplicação
 RUN npm run build

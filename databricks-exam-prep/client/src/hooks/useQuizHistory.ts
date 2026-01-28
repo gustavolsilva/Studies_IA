@@ -12,6 +12,7 @@ export interface QuizAttempt {
   timeSpent: number; // em segundos
   categoryStats: Record<string, { correct: number; total: number }>;
   difficultyStats: Record<string, { correct: number; total: number }>;
+  earlyExit?: boolean; // Indica se o simulado foi encerrado antecipadamente
   answers: Array<{
     questionId: string;
     selected: string;

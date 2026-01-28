@@ -2,6 +2,29 @@
 
 Aplicação interativa para preparação do **Databricks Certified Data Engineer Associate** com suporte a modo prático e modo exame.
 
+## 📂 Organização do Projeto
+
+```
+databricks-exam-prep/
+├── client/               → Aplicação React/TypeScript
+├── server/               → Servidor Express (entrega de assets)
+├── shared/               → Código compartilhado
+├── tools/                → Scripts Python de geração de dados
+├── docker/               → Dockerfiles e docker-compose
+├── docs/                 → Documentação (banco, fidelidade, guias)
+├── patches/              → Patches npm (correções de dependências)
+├── package.json          → Dependências Node.js
+├── tsconfig.json         → Config TypeScript
+├── vite.config.ts        → Config build
+├── setup-environment.sh  → Setup automático (Node.js + Python + Docker)
+└── README.md             → Este arquivo
+```
+
+**Banco oficial de questões:**
+- Gerado por: [tools/generate_questions_parquet.py](tools/generate_questions_parquet.py)
+- Consumido por: [client/public/questions_enhanced.json](client/public/questions_enhanced.json)
+- Carregado no app por: [client/src/lib/questionsLoader.ts](client/src/lib/questionsLoader.ts)
+
 ## ✨ Características
 
 - ✅ **454 questões de alta qualidade** alinhadas com o guia oficial
@@ -137,15 +160,20 @@ Acesse: **http://localhost:3000**
 
 ---
 
-## 🐳 Setup com Docker (Alternativa)
+## 🐳 Setup com Docker
 
 Se preferir virtualização completa:
 
 ```bash
-docker-compose up
+# Opção 1: Docker Compose (recomendado)
+docker-compose -f docker/docker-compose.yml up
+
+# Opção 2: Build manual
+docker build -t databricks-exam-prep:latest -f docker/Dockerfile .
+docker run -p 3000:3000 databricks-exam-prep:latest
 ```
 
-Acesse: http://localhost:3000
+Acesse: **http://localhost:3000**
 
 ---
 
@@ -181,7 +209,7 @@ Acesse: http://localhost:3000
 
 ### Adicionar Novas Questões
 
-1. Abra `generate_questions_parquet.py`
+1. Abra [tools/generate_questions_parquet.py](tools/generate_questions_parquet.py)
 2. Adicione uma nova questão no formato:
    ```python
    add_question(
@@ -206,7 +234,7 @@ Acesse: http://localhost:3000
 3. Regenere o banco:
    ```bash
    source .venv/bin/activate
-   python3 generate_questions_parquet.py
+   python3 tools/generate_questions_parquet.py
    ```
 
 4. Reinicie o servidor:

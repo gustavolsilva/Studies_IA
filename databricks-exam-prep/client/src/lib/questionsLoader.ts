@@ -1,7 +1,6 @@
 /**
- * Carrega questões de múltiplas fontes com fallback:
- * 1. Parquet (compactado, otimizado)
- * 2. JSON (fallback, compatibilidade)
+ * Carrega questões a partir do banco oficial (questions_enhanced.json).
+ * Mantém embaralhamento das alternativas por questão.
  */
 
 export interface Question {
@@ -27,11 +26,41 @@ export interface Question {
 }
 
 /**
- * Carrega dados de Parquet (não implementado em navegador)
+ * Embaralha as opções de uma questão, mantendo rastreamento da resposta correta
  */
-async function loadFromParquet(url: string): Promise<Question[]> {
-  console.warn('Parquet não suportado em navegador');
-  throw new Error('Use loadFromJSON como fallback');
+export function shuffleQuestionOptions(question: Question): Question {
+  const letters: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+  const originalOptions = {
+    A: question.options.A,
+    B: question.options.B,
+    C: question.options.C,
+    D: question.options.D,
+  };
+  
+  // Fisher-Yates shuffle
+  const shuffled = [...letters];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  // Mapear opções embaralhadas
+  const newOptions = {
+    A: originalOptions[shuffled[0]],
+    B: originalOptions[shuffled[1]],
+    C: originalOptions[shuffled[2]],
+    D: originalOptions[shuffled[3]],
+  };
+  
+  // Encontrar nova posição da resposta correta
+  const correctIndex = shuffled.indexOf(question.correctAnswer);
+  const newCorrectAnswer = letters[correctIndex];
+  
+  return {
+    ...question,
+    options: newOptions,
+    correctAnswer: newCorrectAnswer,
+  };
 }
 
 /**
@@ -46,10 +75,12 @@ async function loadFromJSON(url: string): Promise<Question[]> {
   console.log('📦 [questionsLoader] Primeiro item tem options_A?', !!data[0]?.options_A);
   console.log('📦 [questionsLoader] Primeiro item tem options?', !!data[0]?.options);
   
+  let questions: Question[];
+  
   // Se dados vêm do gerador de Parquet, reconstruir options
   if (data[0]?.options_A) {
     console.log('🔄 [questionsLoader] Transformando options_A/B/C/D → options.A/B/C/D');
-    return data.map((q: any) => ({
+    questions = data.map((q: any) => ({
       ...q,
       options: {
         A: q.options_A,
@@ -62,49 +93,30 @@ async function loadFromJSON(url: string): Promise<Question[]> {
         url: q.reference_url,
       },
     }));
+  } else {
+    console.log('⏭️  [questionsLoader] JSON já em formato correto');
+    questions = data;
   }
   
-  console.log('⏭️  [questionsLoader] JSON já em formato correto, retornando como está');
-  return data;
+  // Embaralhar opções de cada questão
+  console.log('🎲 [questionsLoader] Embaralhando opções de resposta...');
+  questions = questions.map(shuffleQuestionOptions);
+  
+  return questions;
 }
 
 /**
- * Carrega questões com fallback automático
+ * Carrega questões do banco oficial (questions_enhanced.json)
  */
 export async function loadQuestions(): Promise<Question[]> {
-  // Tentar Parquet primeiro (se DuckDB disponível)
   try {
-    console.log('📊 Tentando carregar Parquet (otimizado)...');
-    const questions = await loadFromParquet('/questions_enhanced.parquet');
-    console.log(`✅ Carregadas ${questions.length} questões de Parquet`);
-    return questions;
-  } catch (error) {
-    console.warn('⚠️  Parquet não disponível, tentando JSON...', error);
-  }
-
-  // Fallback para JSON enhanced
-  try {
-    console.log('📄 Tentando carregar JSON enhanced...');
+    console.log('📄 Carregando banco oficial: questions_enhanced.json');
     const questions = await loadFromJSON('/questions_enhanced.json');
     console.log(`✅ Carregadas ${questions.length} questões de JSON enhanced`);
-    console.log(`✅ [DEBUG] Primeira questão tem options?`, !!questions[0]?.options);
-    console.log(`✅ [DEBUG] Primeira questão tem options.A?`, !!questions[0]?.options?.A);
     return questions;
   } catch (error) {
-    console.warn('⚠️  JSON enhanced não disponível, tentando expanded...', error);
-  }
-
-  // Fallback para JSON expanded (compatibilidade)
-  try {
-    console.log('📄 Tentando carregar JSON expanded...');
-    const questions = await loadFromJSON('/questions_expanded.json');
-    console.log(`✅ Carregadas ${questions.length} questões de JSON expanded`);
-    console.log(`✅ [DEBUG] Primeira questão tem options?`, !!questions[0]?.options);
-    console.log(`✅ [DEBUG] Primeira questão tem options.A?`, !!questions[0]?.options?.A);
-    return questions;
-  } catch (error) {
-    console.error('❌ Nenhuma fonte de questões disponível!', error);
-    throw new Error('Falha ao carregar banco de questões. Verifique se os arquivos estão em client/public/');
+    console.error('❌ Falha ao carregar banco de questões', error);
+    throw new Error('Não foi possível carregar questions_enhanced.json em client/public');
   }
 }
 
