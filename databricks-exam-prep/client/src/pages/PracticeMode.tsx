@@ -442,11 +442,11 @@ export default function PracticeMode() {
         </div>
 
         {/* Main Content - Responsive Layout */}
-        <div className="flex-1 overflow-hidden flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-6 p-3 md:p-6 container">
+        <div className="flex-1 overflow-hidden flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-6 p-3 md:p-6 container max-w-5xl mx-auto w-full">
           {/* Questão - Left Side */}
           <div className="md:col-span-2 flex flex-col min-h-0">
             <div ref={questionTopRef} tabIndex={-1} className="h-0 scroll-mt-8"></div>
-            <Card className="p-4 md:p-6 flex flex-col h-full">
+            <Card className="p-3 md:p-5 flex flex-col h-full">
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <span className="text-xs md:text-sm font-semibold text-primary">{current.category}</span>
@@ -454,7 +454,7 @@ export default function PracticeMode() {
                       {current.difficulty}
                     </span>
                   </div>
-                  <h2 className="text-base md:text-lg font-bold text-foreground leading-tight">{current.question}</h2>
+                  <h2 className="text-base md:text-lg font-bold text-foreground leading-snug break-words">{current.question}</h2>
                 </div>
 
                 {/* Opções - Compact */}
@@ -464,7 +464,7 @@ export default function PracticeMode() {
                       key={option}
                       onClick={() => handleSelectAnswer(option)}
                       disabled={showFeedback}
-                      className={`w-full p-3 text-left rounded-lg border-2 transition-all text-sm md:text-base ${
+                      className={`w-full p-2.5 md:p-3.5 text-left rounded-lg border-2 transition-all text-sm md:text-base ${
                         selectedAnswer === option
                           ? showFeedback
                             ? option === current.correctAnswer
@@ -475,8 +475,8 @@ export default function PracticeMode() {
                       }`}
                     >
                       <div className="flex items-start gap-2">
-                        <span className="font-semibold text-primary flex-shrink-0">{option}.</span>
-                        <span className="break-words">{current.options[option as keyof typeof current.options]}</span>
+                        <span className="font-semibold text-primary flex-shrink-0 text-xs md:text-sm leading-snug">{option}.</span>
+                        <span className="break-words text-xs md:text-sm leading-snug">{current.options[option as keyof typeof current.options]}</span>
                       </div>
                     </button>
                   ))}

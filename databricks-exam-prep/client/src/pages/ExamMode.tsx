@@ -439,7 +439,7 @@ export default function ExamMode() {
       )}
 
       {/* Conteúdo Principal - Responsivo */}
-      <main className="flex-1 overflow-hidden flex flex-col container px-3 md:px-6 py-3 md:py-6">
+      <main className="flex-1 overflow-hidden flex flex-col container max-w-4xl mx-auto w-full px-3 md:px-4 py-3 md:py-5">
         {/* Barra de Progresso Compacta */}
         <div className="mb-3 md:mb-4 flex-shrink-0">
           <div className="flex justify-between items-center mb-1.5 md:mb-2 text-xs md:text-sm">
@@ -459,17 +459,17 @@ export default function ExamMode() {
         {/* Questão - Scrollable */}
         <div ref={questionTopRef} tabIndex={-1} className="h-0 scroll-mt-8"></div>
         <div className="flex-1 overflow-y-auto pr-2">
-          <Card className="p-4 md:p-6 mb-4">
+          <Card className="p-3 md:p-4 mb-3">
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                <span className="text-[11px] md:text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                   {current.category}
                 </span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                <span className="text-[11px] md:text-xs font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                   {current.difficulty === "advanced" ? "Avançado" : "Intermediário"}
                 </span>
               </div>
-              <h2 className="text-base md:text-lg font-bold leading-tight">{current.question}</h2>
+              <h2 className="text-sm md:text-base font-bold leading-snug break-words">{current.question}</h2>
             </div>
 
             {/* Opções - Compactas */}
@@ -477,8 +477,14 @@ export default function ExamMode() {
               {["A", "B", "C", "D"].map((option) => (
                 <button
                   key={option}
-                  onClick={() => handleSelectAnswer(option)}
-                  className={`w-full p-3 text-left rounded-lg border-2 transition-all text-sm md:text-base ${
+                  onClick={() => {
+                    if (selectedAnswer === option) {
+                      handleNext();
+                    } else {
+                      handleSelectAnswer(option);
+                    }
+                  }}
+                  className={`w-full p-2 md:p-3 text-left rounded-lg border-2 transition-all text-xs md:text-sm ${
                     selectedAnswer === option
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50"
@@ -492,11 +498,11 @@ export default function ExamMode() {
                           : "border-border"
                       }`}
                     >
-                      {selectedAnswer === option && <span className="text-xs md:text-sm font-bold">✓</span>}
+                      {selectedAnswer === option && <span className="text-[10px] md:text-[11px] font-bold">✓</span>}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-xs md:text-sm">{option}.</p>
-                      <p className="text-xs md:text-sm text-muted-foreground break-words">{current.options[option as keyof typeof current.options]}</p>
+                      <p className="font-semibold text-[12px] md:text-sm leading-snug">{option}.</p>
+                      <p className="text-[12px] md:text-sm text-muted-foreground break-words leading-snug">{current.options[option as keyof typeof current.options]}</p>
                     </div>
                   </div>
                 </button>

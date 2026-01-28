@@ -109,3 +109,24 @@ temp/
 .venv/
 env/
 venv/
+
+# Test files
+test-*.mjs
+test_*.py
+*_test.py
+*.test.js
+
+# Temporary normalized files
+*_normalized.json
+*_temp.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Archive folders (mantidos mas não versionados se vazios)
+# tools/archive/
+# docs/archive/
