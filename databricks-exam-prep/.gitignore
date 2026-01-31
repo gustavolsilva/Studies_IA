@@ -109,6 +109,7 @@ temp/
 .venv/
 env/
 venv/
+./.venv
 
 # Test files
 test-*.mjs

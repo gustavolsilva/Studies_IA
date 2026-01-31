@@ -1,0 +1,8 @@
+# Python dependencies
+pypdf==4.2.0
+PyPDF2==3.0.1
+soundfile==0.12.1
+librosa==0.10.2.post1
+openai==1.35.13
+TTS @ git+https://github.com/coqui-ai/TTS@v0.21.3
+packaging>=23.2
